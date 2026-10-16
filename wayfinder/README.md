@@ -64,6 +64,17 @@ Arrows are SVG drawn on top of the photo at runtime, never baked into the image
 No code changes are needed — the graph, the search and the player all read from
 the JSON.
 
+### Reusing a photo
+
+Several steps can point at the same photo. A junction shot from the lobby can
+serve the walk to the stairwell (`straight`), the mandir (`right`) and the
+library (`left`), each with its own arrow and text. The arrow sits at a fixed
+spot for each direction (centre, or near the left or right edge), so reuse
+works best when the doorway you mean is roughly where that arrow lands.
+
+Reverse legs usually need their own photo, since walking back you face the
+other way.
+
 ## What is still placeholder
 
 The cafeteria → rooms 200–220 route is real photography. **Mandir** and
