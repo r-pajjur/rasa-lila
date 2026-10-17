@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Gurukula Lock Tester</title>
+<meta name="robots" content="noindex">
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; background: #fff; color: #222; }
+  h1 { font-size: 1.4rem; }
+  section { border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: .9rem; }
+  input, select { width: 100%; padding: 8px; box-sizing: border-box; font-size: 1rem; }
+  button { padding: 8px 14px; margin-top: 10px; font-size: 1rem; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid #eee; }
+  .row { display: flex; gap: 12px; } .row > div { flex: 1; }
+  #log { white-space: pre-wrap; font-family: monospace; font-size: .8rem; background: #f6f6f6; padding: 8px; max-height: 240px; overflow: auto; }
+  .muted { color: #666; font-size: .85rem; }
+</style>
+</head>
+<body>
+<h1>Life Gurukula Lock Tester</h1>
+<p class="muted">Sets and removes access codes on Schlage Encode locks through Seam.</p>
+
+<section>
+  <h2>1. Seam API key</h2>
+  <label for="key">API key (starts with seam_)</label>
+  <input id="key" type="password" placeholder="seam_...">
+  <p class="muted">Saved only in this browser.</p>
+  <button id="connect">Connect Schlage account</button>
+  <button id="loadLocks">Load locks</button>
+</section>
+
+<section>
+  <h2>2. Lock</h2>
+  <select id="lock"><option value="">Load locks first</option></select>
+  <p id="lockInfo" class="muted"></p>
+</section>
+
+<section>
+  <h2>3. Set a code</h2>
+  <div class="row">
+    <div><label for="code">Code (4 to 8 digits)</label><input id="code" inputmode="numeric" maxlength="8"></div>
+    <div><label for="name">Guest name</label><input id="name" placeholder="Test guest"></div>
+  </div>
+  <div class="row">
+    <div><label for="start">Starts (optional)</label><input id="start" type="datetime-local"></div>
+    <div><label for="end">Ends (optional)</label><input id="end" type="datetime-local"></div>
+  </div>
+  <p class="muted">Leave both times empty for a permanent code.</p>
+  <button id="random">Random code</button>
+  <button id="setCode">Push code to lock</button>
+</section>
+
+<section>
+  <h2>4. Codes on this lock</h2>
+  <button id="refresh">Refresh</button>
+  <table>
+    <thead><tr><th>Name</th><th>Code</th><th>Window</th><th>Status</th><th></th></tr></thead>
+    <tbody id="codes"></tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Log</h2>
+  <div id="log"></div>
+</section>
+
+<script>
+// Seam blocks direct browser calls, so go through a proxy: server.js on localhost, api/seam on Vercel.
+const LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const seamUrl = path => LOCAL ? '/seam' + path : '/api/seam?path=' + encodeURIComponent(path);
+const $ = id => document.getElementById(id);
+
+try { $('key').value = localStorage.getItem('seamKey') || ''; } catch (e) {}
+$('key').addEventListener('change', () => { try { localStorage.setItem('seamKey', $('key').value.trim()); } catch (e) {} });
+
+function log(msg) { $('log').textContent = `[${new Date().toLocaleTimeString()}] ${msg}\n` + $('log').textContent; }
+
+async function seam(path, body = {}) {
+  const key = $('key').value.trim();
+  if (!key) throw new Error('Enter your Seam API key first.');
+  const res = await fetch(seamUrl(path), {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+  return data;
+}
+
+function run(fn) {
+  return async () => {
+    try { await fn(); }
+    catch (e) {
+      log('ERROR: ' + e.message + (e instanceof TypeError ? '\n(Could not reach the Seam proxy. Locally, run node server.js and open http://localhost:8080.)' : ''));
+    }
+  };
+}
+
+let locks = [];
+
+$('connect').onclick = run(async () => {
+  const { connect_webview } = await seam('/connect_webviews/create', { accepted_providers: ['schlage'] });
+  window.open(connect_webview.url, '_blank');
+  log('Opened the Schlage sign-in page. After signing in, click "Load locks".');
+});
+
+$('loadLocks').onclick = run(async () => {
+  const { devices } = await seam('/devices/list');
+  locks = devices;
+  $('lock').innerHTML = devices.length
+    ? devices.map(d => `<option value="${d.device_id}">${d.properties?.name || d.display_name || d.device_id}</option>`).join('')
+    : '<option value="">No locks found</option>';
+  log(`Found ${devices.length} lock(s).`);
+  showLock();
+  if (devices.length) await loadCodes();
+});
+
+function showLock() {
+  const d = locks.find(l => l.device_id === $('lock').value);
+  if (!d) { $('lockInfo').textContent = ''; return; }
+  const p = d.properties || {};
+  const battery = p.battery_level != null ? Math.round(p.battery_level * 100) + '%' : 'unknown';
+  $('lockInfo').textContent = `${p.online ? 'Online' : 'OFFLINE'} · battery ${battery} · ${p.locked ? 'locked' : 'unlocked'}`;
+}
+$('lock').onchange = run(async () => { showLock(); await loadCodes(); });
+
+$('random').onclick = () => { $('code').value = String(Math.floor(100000 + Math.random() * 900000)); };
+
+$('setCode').onclick = run(async () => {
+  const device_id = $('lock').value;
+  const code = $('code').value.trim();
+  if (!device_id) throw new Error('Pick a lock first.');
+  if (!/^\d{4,8}$/.test(code)) throw new Error('Code must be 4 to 8 digits.');
+  const body = { device_id, code, name: $('name').value.trim() || 'Test guest' };
+  if ($('start').value || $('end').value) {
+    if (!$('start').value || !$('end').value) throw new Error('Fill in both start and end, or neither.');
+    body.starts_at = new Date($('start').value).toISOString();
+    body.ends_at = new Date($('end').value).toISOString();
+  }
+  const { access_code } = await seam('/access_codes/create', body);
+  log(`Code ${access_code.code} for "${access_code.name}" sent (status: ${access_code.status}). Refresh in a minute to confirm it's set on the lock.`);
+  await loadCodes();
+});
+
+async function loadCodes() {
+  const device_id = $('lock').value;
+  if (!device_id) return;
+  const { access_codes } = await seam('/access_codes/list', { device_id });
+  const fmt = s => s ? new Date(s).toLocaleString() : '';
+  $('codes').innerHTML = access_codes.map(c => {
+    const problems = [...(c.errors || []), ...(c.warnings || [])].map(x => x.message).join('; ');
+    return `<tr>
+      <td>${c.name || ''}</td><td>${c.code || ''}</td>
+      <td>${c.type === 'time_bound' ? fmt(c.starts_at) + ' to ' + fmt(c.ends_at) : 'permanent'}</td>
+      <td>${c.status}${problems ? '<br><span class="muted">' + problems + '</span>' : ''}</td>
+      <td><button data-id="${c.access_code_id}">Delete</button></td></tr>`;
+  }).join('') || '<tr><td colspan="5" class="muted">No codes</td></tr>';
+  $('codes').querySelectorAll('button[data-id]').forEach(b => b.onclick = run(async () => {
+    await seam('/access_codes/delete', { access_code_id: b.dataset.id });
+    log('Delete requested. Refresh in a minute to confirm it is removed from the lock.');
+    await loadCodes();
+  }));
+}
+$('refresh').onclick = run(async () => { await seam('/devices/list').then(r => { locks = r.devices; showLock(); }); await loadCodes(); log('Refreshed.'); });
+</script>
+</body>
+</html>
