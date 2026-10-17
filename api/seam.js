@@ -1,7 +1,7 @@
 /**
  * Forwards the Schlage lock tester's calls to the Seam API, since Seam blocks
  * direct browser calls. The caller sends their own Seam key; nothing is stored here.
- *   POST /api/seam?path=/devices/list
+ *   POST /api/seam/?path=/devices/list
  */
 const SEAM = 'https://connect.getseam.com';
 const ALLOWED = ['/connect_webviews/', '/devices/', '/access_codes/'];

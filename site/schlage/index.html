@@ -70,7 +70,7 @@
 <script>
 // Seam blocks direct browser calls, so go through a proxy: server.js on localhost, api/seam on Vercel.
 const LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const seamUrl = path => LOCAL ? '/seam' + path : '/api/seam?path=' + encodeURIComponent(path);
+const seamUrl = path => LOCAL ? '/seam' + path : '/api/seam/?path=' + encodeURIComponent(path);
 const $ = id => document.getElementById(id);
 
 try { $('key').value = localStorage.getItem('seamKey') || ''; } catch (e) {}
