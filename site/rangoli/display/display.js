@@ -1,4 +1,4 @@
-import { ringOf, api, loadPieces, drawCircle } from '../shared.js';
+import { api, loadPieces, drawCircle } from '../shared.js';
 import { Mandala, decode } from '../mandala.js';
 
 const $ = id => document.getElementById(id);
@@ -44,12 +44,7 @@ function updateCount() {
     $('countText').textContent = 'Be the first to add a rangoli.';
     return;
   }
-  const ring = ringOf(mandala.people.length - 1);
-  const left = ring * (ring + 1) - people;
-  const ordinal = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'][ring - 1] || `number ${ring}`;
-  $('countText').innerHTML = `${people === 1 ? 'rangoli' : 'rangolis'} so far.<br>` +
-    (left === 0 ? `The ${ordinal} ring is complete. The next one opens now.` :
-      `${left} more and the ${ordinal} ring is complete.`);
+  $('countText').textContent = `${people === 1 ? 'rangoli' : 'rangolis'} so far`;
 }
 
 /* ---------- arrivals ---------- */
@@ -222,11 +217,11 @@ $('save').addEventListener('click', async () => {
   cv.toBlob(blob => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'petal-mandala.png';
+    a.download = 'community-rangoli.png';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     btn.disabled = false;
-    btn.textContent = 'Save the mandala as an image';
+    btn.textContent = 'Download mandala';
   }, 'image/png');
 });
 

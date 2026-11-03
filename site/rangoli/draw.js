@@ -404,7 +404,7 @@ function showDone(n, mine) {
   $('doneView').hidden = false;
   $('doneMine').src = mine;
   const ring = ORDINALS[place.ring - 1] || `number ${place.ring}`;
-  $('doneText').textContent = `We cut it into 4 and placed the pieces around the ${ring} ring. They’re marked below.`;
+  $('doneText').textContent = `Your rangoli was split into four pieces and placed in the ${ring} ring at the highlighted spots below.`;
   drawMap($('doneMap'), place);
   window.scrollTo(0, 0);
 }
