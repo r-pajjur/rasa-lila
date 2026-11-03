@@ -154,21 +154,20 @@ async function call(action, { method = 'GET', body, password, params = {} } = {}
 export const api = {
   /** Who is where: { rev, items: [{ n, id, name, at }] }, or { rev, same: true } if unchanged since `rev`. */
   index: rev => call('index', { params: rev === undefined ? {} : { rev: String(rev) } }),
-  /** The drawings for up to 10 places. */
-  pieces: ns => call('pieces', { params: { ns: ns.join(',') } }),
+  /** The drawings for up to 10 designs, by id. */
+  pieces: ids => call('pieces', { params: { ids: ids.join(',') } }),
   submit: (name, image) => call('submit', { method: 'POST', body: { name, image } }),
   check: password => call('check', { method: 'POST', password }),
   reset: password => call('reset', { method: 'POST', password }),
-  remove: (password, n) => call('delete', { method: 'POST', password, params: { n: String(n) } }),
+  remove: (password, id) => call('delete', { method: 'POST', password, params: { id } }),
 };
 
 /** Fetches the drawings for the given index items, 10 at a time. */
 export async function loadPieces(items, onBatch) {
   for (let k = 0; k < items.length; k += 10) {
     const batch = items.slice(k, k + 10);
-    const { entries } = await api.pieces(batch.map(it => it.n));
-    const byN = new Map(entries.map(e => [e.n, e]));
-    // the index's id and name are the source of truth for each place
-    await onBatch(batch.filter(it => byN.has(it.n)).map(it => ({ ...it, image: byN.get(it.n).image })));
+    const { entries } = await api.pieces(batch.map(it => it.id));
+    const byId = new Map(entries.map(e => [e.id, e.image]));
+    await onBatch(batch.filter(it => byId.has(it.id)).map(it => ({ ...it, image: byId.get(it.id) })));
   }
 }

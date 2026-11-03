@@ -7,8 +7,9 @@ const mandala = new Mandala(canvas);
 const POLL_MS = 2000;
 
 let rev;                       // the server's change counter we last saw
-const known = new Map();       // place n -> design id currently shown there
-const queue = [];              // new arrivals waiting to bloom in
+const cache = new Map();       // design id -> { pixels, name, image }
+let shown = [];                // design ids in the mandala, in place order
+let queue = [];                // new arrivals (ids) waiting to bloom in, after `shown`
 let blooming = false;
 
 /* ---------- join link ---------- */
@@ -53,35 +54,19 @@ function updateCount() {
 
 /* ---------- arrivals ---------- */
 
-async function ingest(entries, animate) {
-  const decoded = [];
-  for (const e of entries) {
-    try {
-      decoded.push({ i: e.n - 1, n: e.n, id: e.id, pixels: await decode(e.image), name: e.name, image: e.image });
-    } catch (err) {
-      // a broken image leaves a gap rather than stopping the display
-    }
-  }
-  if (!animate) {
-    mandala.add(decoded);
-    updateCount();
-    return;
-  }
-  queue.push(...decoded);
-  if (!blooming) bloomNext();
-}
-
 function bloomNext() {
-  let next = queue.shift();
-  while (next && known.get(next.n) !== next.id) next = queue.shift();   // deleted while waiting
-  if (!next) {
+  const id = queue.shift();
+  if (!id) {
     blooming = false;
     return;
   }
   blooming = true;
-  const animated = mandala.add([next], { animate: true });
+  const d = cache.get(id);
+  const i = shown.length;
+  shown.push(id);
+  const animated = mandala.add([{ i, pixels: d.pixels, name: d.name }], { animate: true });
   updateCount();
-  showToast(next);
+  showToast(d);
   if (!animated) {
     setTimeout(bloomNext, 2600);
     return;
@@ -97,6 +82,17 @@ function bloomNext() {
     }
   };
   requestAnimationFrame(step);
+}
+
+/** Lays the mandala out again from scratch, e.g. after a deletion moved everyone along. */
+function relayout(ids) {
+  queue = [];
+  shown = ids.slice();
+  mandala.people = shown.map(id => ({ pixels: cache.get(id).pixels, name: cache.get(id).name }));
+  mandala.hover = null;
+  hideTip();
+  mandala.rebuild();
+  updateCount();
 }
 
 let toastTimer;
@@ -122,26 +118,26 @@ async function poll(first) {
     const idx = await api.index(rev);
     if (!idx.same) {
       rev = idx.rev;
-      const current = new Map(idx.items.map(it => [it.n, it.id]));
-      // designs that were deleted or replaced come off first
-      let removed = false;
-      for (const [n, id] of known) {
-        if (current.get(n) !== id) {
-          known.delete(n);
-          mandala.people[n - 1] = undefined;
-          removed = true;
+      for (const it of idx.items) if (cache.has(it.id)) cache.get(it.id).name = it.name;
+      const missing = idx.items.filter(it => !cache.has(it.id));
+      await loadPieces(missing, async batch => {
+        for (const e of batch) {
+          try {
+            cache.set(e.id, { pixels: await decode(e.image), name: e.name, image: e.image });
+          } catch (err) {
+            // a broken image is left out rather than stopping the display
+          }
         }
+      });
+      const ids = idx.items.map(it => it.id).filter(id => cache.has(id));
+      const accounted = shown.concat(queue);
+      const appendedOnly = !first && accounted.every((id, k) => ids[k] === id);
+      if (appendedOnly) {
+        queue.push(...ids.slice(accounted.length));
+        if (!blooming && queue.length) bloomNext();
+      } else {
+        relayout(ids);
       }
-      if (removed) {
-        while (mandala.people.length && !mandala.people[mandala.people.length - 1]) mandala.people.pop();
-        mandala.hover = null;
-        hideTip();
-        mandala.rebuild();
-        updateCount();
-      }
-      const fresh = idx.items.filter(it => !known.has(it.n));
-      for (const it of fresh) known.set(it.n, it.id);
-      await loadPieces(fresh, batch => ingest(batch, !first));
     }
   } catch (err) {
     // keep showing what we have; the next poll will try again

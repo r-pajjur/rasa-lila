@@ -66,7 +66,7 @@
       <button type="button" class="btn btn-danger" id="reset">Reset the mandala</button>
     </div>
     <p class="summary" id="summary">Loading…</p>
-    <p class="summary" style="margin-top:-12px">Deleting a rangoli frees its 4 spots, and the next person to draw one fills them.</p>
+    <p class="summary" style="margin-top:-12px">Deleting a rangoli moves everyone added after it in by one place, so the mandala stays full.</p>
     <p class="error" id="adminError" role="alert" hidden></p>
     <div class="grid" id="grid"></div>
   </section>
@@ -138,7 +138,7 @@
         del.disabled = true;
         del.textContent = 'Deleting…';
         try {
-          await api.remove(password, e.n);
+          await api.remove(password, e.id);
           await load();
         } catch (err) {
           $('adminError').textContent = err.message;
