@@ -76,7 +76,7 @@
   .join { display: flex; gap: 18px; align-items: center; }
   .qr { flex: none; width: clamp(110px, 10vw, 150px); aspect-ratio: 1; background: #fff; border: var(--border); border-radius: var(--radius); padding: 6px; }
   .qr svg { width: 100%; height: 100%; display: block; }
-  .join .url { font-size: clamp(18px, 1.6vw, 23px); font-weight: 700; overflow-wrap: break-word; line-height: 1.2; }
+  .url { margin-top: -6px; font-size: clamp(18px, 1.6vw, 24px); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .count { display: flex; align-items: center; gap: 14px; padding-top: 14px; border-top: var(--border); }
   .count b { font: 400 clamp(48px, 4.6vw, 66px)/.9 var(--font-display); color: var(--magenta); font-variant-numeric: tabular-nums; }
@@ -116,11 +116,9 @@
     <p>Draw a small rangoli on your phone or computer. We cut it into 4 and it becomes part of this one.</p>
     <div class="join">
       <div class="qr" id="qr" aria-label="QR code to the drawing page" role="img"></div>
-      <div>
-        <p style="font-size:15px">Scan, or go to</p>
-        <div class="url" id="url"></div>
-      </div>
+      <p style="font-size:16px">Scan with your phone’s camera, or type the link below.</p>
     </div>
+    <div class="url" id="url"></div>
     <div class="count">
       <b id="count">0</b>
       <span id="countText">Be the first to add a rangoli.</span>

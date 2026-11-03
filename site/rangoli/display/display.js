@@ -15,9 +15,7 @@ let blooming = false;
 /* ---------- join link ---------- */
 
 const drawUrl = new URL('../', location.href).href;
-// break the line after the domain, never mid-word
-const [host, ...rest] = drawUrl.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/');
-$('url').append(host, ...(rest.length ? [document.createElement('wbr'), '/' + rest.join('/')] : []));
+$('url').textContent = drawUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
 if (window.qrcode) {
   const qr = window.qrcode(0, 'M');
   qr.addData(drawUrl);
