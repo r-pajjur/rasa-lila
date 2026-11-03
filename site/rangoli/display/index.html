@@ -29,6 +29,21 @@
   .stage { position: relative; flex: none; width: min(calc(100vh - 32px), calc(100vw - 460px)); aspect-ratio: 1; }
   .stage canvas { width: 100%; height: 100%; display: block; }
 
+  .stage canvas { cursor: default; touch-action: manipulation; }
+  .tip {
+    position: absolute;
+    z-index: 3;
+    padding: 5px 12px 4px;
+    background: var(--paper);
+    color: var(--ink);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: 3px 3px 0 var(--marigold);
+    font: 400 clamp(17px, 1.5vw, 22px)/1.2 var(--font-display);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
   .toast {
     position: absolute;
     left: 0;
@@ -100,6 +115,7 @@
 <main class="screen">
   <div class="stage">
     <canvas id="mandala" role="img" aria-label="The community mandala"></canvas>
+    <div class="tip" id="tip" role="tooltip" hidden></div>
     <div class="toast" id="toast" aria-live="polite"><img id="toastImg" alt="" /><span id="toastText"></span></div>
   </div>
 

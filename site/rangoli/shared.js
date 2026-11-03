@@ -60,6 +60,24 @@ export function placement(i) {
   return { ring, j, slotCount: slots, slots: [0, 1, 2, 3].map(m => j + m * people) };
 }
 
+/** The reverse of placement: which person (0-based) owns slot `slot` of ring k. */
+export function personAt(k, slot) {
+  const j = slot % (2 * k);
+  const g = j % 2 === 0 ? j / 2 : k + (j - 1) / 2;
+  return k * (k - 1) + g;
+}
+
+/** Ring and slot under a point given in mandala units from the centre, or null. */
+export function slotAtPoint(x, y, rings) {
+  const rho = Math.hypot(x, y);
+  const k = Math.floor((rho - RING_R0) / RING_W) + 1;
+  if (k < 1 || k > rings) return null;
+  const { slots } = ringGeom(k);
+  const step = TAU / slots;
+  const slot = ((Math.round((Math.atan2(y, x) + Math.PI / 2) / step) % slots) + slots) % slots;
+  return { ring: k, slot };
+}
+
 /** Centre angle of a slot; slot 0 sits at the top. */
 export function slotAngle(slot, slotCount) {
   return -Math.PI / 2 + slot * (TAU / slotCount);
@@ -134,23 +152,23 @@ async function call(action, { method = 'GET', body, password, params = {} } = {}
 }
 
 export const api = {
-  /** Entries after `since` (1-based numbers), in batches. Returns { count, entries }. */
-  state: since => call('state', { params: { since: String(since) } }),
+  /** Who is where: { rev, items: [{ n, id, name, at }] }, or { rev, same: true } if unchanged since `rev`. */
+  index: rev => call('index', { params: rev === undefined ? {} : { rev: String(rev) } }),
+  /** The drawings for up to 10 places. */
+  pieces: ns => call('pieces', { params: { ns: ns.join(',') } }),
   submit: (name, image) => call('submit', { method: 'POST', body: { name, image } }),
   check: password => call('check', { method: 'POST', password }),
   reset: password => call('reset', { method: 'POST', password }),
+  remove: (password, n) => call('delete', { method: 'POST', password, params: { n: String(n) } }),
 };
 
-/** Loads every entry after `since`, batch by batch. */
-export async function loadAllSince(since, onBatch) {
-  let cursor = since;
-  for (;;) {
-    const { count, entries } = await api.state(cursor);
-    if (count < cursor) return { count, reset: true };
-    if (entries.length) {
-      await onBatch(entries);
-      cursor = entries[entries.length - 1].n;
-    }
-    if (cursor >= count || !entries.length) return { count, reset: false };
+/** Fetches the drawings for the given index items, 10 at a time. */
+export async function loadPieces(items, onBatch) {
+  for (let k = 0; k < items.length; k += 10) {
+    const batch = items.slice(k, k + 10);
+    const { entries } = await api.pieces(batch.map(it => it.n));
+    const byN = new Map(entries.map(e => [e.n, e]));
+    // the index's id and name are the source of truth for each place
+    await onBatch(batch.filter(it => byN.has(it.n)).map(it => ({ ...it, image: byN.get(it.n).image })));
   }
 }

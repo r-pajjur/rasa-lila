@@ -31,6 +31,7 @@
   .card .who { font-weight: 600; font-size: 16px; overflow-wrap: anywhere; }
   .card .when { font-size: 13px; color: var(--ink-soft); }
   .btn-danger { color: var(--kumkum); border-color: var(--kumkum); }
+  .card .del { min-height: 40px; font-size: 15px; margin-top: auto; }
 </style>
 </head>
 <body>
@@ -65,6 +66,7 @@
       <button type="button" class="btn btn-danger" id="reset">Reset the mandala</button>
     </div>
     <p class="summary" id="summary">Loading…</p>
+    <p class="summary" style="margin-top:-12px">Deleting a rangoli frees its 4 spots, and the next person to draw one fills them.</p>
     <p class="error" id="adminError" role="alert" hidden></p>
     <div class="grid" id="grid"></div>
   </section>
@@ -72,7 +74,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
-  import { api, loadAllSince } from '../shared.js';
+  import { api, loadPieces } from '../shared.js';
 
   const $ = id => document.getElementById(id);
   let password = '';
@@ -101,8 +103,9 @@
   }
 
   async function load() {
+    const { items } = await api.index();
     entries = [];
-    await loadAllSince(0, async batch => { entries.push(...batch); });
+    await loadPieces(items, async batch => { entries.push(...batch); });
     $('summary').textContent = entries.length
       ? `${entries.length} ${entries.length === 1 ? 'rangoli' : 'rangolis'} so far. Everything is deleted automatically two weeks after it was added.`
       : 'Nobody has added a rangoli yet.';
@@ -116,11 +119,35 @@
       img.alt = e.name ? `${e.name}’s rangoli` : 'A rangoli';
       const who = document.createElement('div');
       who.className = 'who';
-      who.textContent = `${e.n}. ${e.name || 'No name'}`;
+      who.textContent = `${e.n}. ${e.name || 'Anonymous'}`;
       const when = document.createElement('div');
       when.className = 'when';
-      when.textContent = new Date(e.at).toLocaleString();
-      card.append(img, who, when);
+      when.textContent = e.at ? new Date(e.at).toLocaleString() : '';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn btn-danger del';
+      del.textContent = 'Delete';
+      let armed = false;
+      del.addEventListener('click', async () => {
+        if (!armed) {
+          armed = true;
+          del.textContent = 'Click again to delete';
+          setTimeout(() => { armed = false; del.textContent = 'Delete'; }, 4000);
+          return;
+        }
+        del.disabled = true;
+        del.textContent = 'Deleting…';
+        try {
+          await api.remove(password, e.n);
+          await load();
+        } catch (err) {
+          $('adminError').textContent = err.message;
+          $('adminError').hidden = false;
+          del.disabled = false;
+          del.textContent = 'Delete';
+        }
+      });
+      card.append(img, who, when, del);
       grid.append(card);
     }
   }

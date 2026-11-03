@@ -1,4 +1,4 @@
-import { ringOf, loadAllSince } from '../shared.js';
+import { ringOf, api, loadPieces } from '../shared.js';
 import { Mandala, decode } from '../mandala.js';
 
 const $ = id => document.getElementById(id);
@@ -6,9 +6,8 @@ const canvas = $('mandala');
 const mandala = new Mandala(canvas);
 const POLL_MS = 2000;
 
-let count = 0;                 // how many entries we've loaded (1-based numbers up to this)
-const names = [];              // by arrival index
-const images = [];             // data URLs by arrival index, for the toast and export
+let rev;                       // the server's change counter we last saw
+const known = new Map();       // place n -> design id currently shown there
 const queue = [];              // new arrivals waiting to bloom in
 let blooming = false;
 
@@ -44,9 +43,8 @@ function updateCount() {
     $('countText').textContent = 'Be the first to add a rangoli.';
     return;
   }
-  const ring = ringOf(people - 1);
-  const ringEnd = ring * (ring + 1);
-  const left = ringEnd - people;
+  const ring = ringOf(mandala.people.length - 1);
+  const left = ring * (ring + 1) - people;
   const ordinal = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'][ring - 1] || `number ${ring}`;
   $('countText').innerHTML = `${people === 1 ? 'rangoli' : 'rangolis'} so far.<br>` +
     (left === 0 ? `The ${ordinal} ring is complete. The next one opens now.` :
@@ -58,11 +56,8 @@ function updateCount() {
 async function ingest(entries, animate) {
   const decoded = [];
   for (const e of entries) {
-    const i = e.n - 1;
-    names[i] = e.name;
-    images[i] = e.image;
     try {
-      decoded.push({ i, pixels: await decode(e.image), name: e.name, image: e.image });
+      decoded.push({ i: e.n - 1, n: e.n, id: e.id, pixels: await decode(e.image), name: e.name, image: e.image });
     } catch (err) {
       // a broken image leaves a gap rather than stopping the display
     }
@@ -77,7 +72,8 @@ async function ingest(entries, animate) {
 }
 
 function bloomNext() {
-  const next = queue.shift();
+  let next = queue.shift();
+  while (next && known.get(next.n) !== next.id) next = queue.shift();   // deleted while waiting
   if (!next) {
     blooming = false;
     return;
@@ -123,23 +119,71 @@ function showToast({ name, image }) {
 
 async function poll(first) {
   try {
-    const result = await loadAllSince(count, async entries => {
-      await ingest(entries, !first);
-      count = entries[entries.length - 1].n;
-    });
-    if (result.reset) {
-      // the admin cleared the mandala: start over
-      count = 0;
-      mandala.people = [];
-      names.length = images.length = queue.length = 0;
-      mandala.rebuild();
-      updateCount();
+    const idx = await api.index(rev);
+    if (!idx.same) {
+      rev = idx.rev;
+      const current = new Map(idx.items.map(it => [it.n, it.id]));
+      // designs that were deleted or replaced come off first
+      let removed = false;
+      for (const [n, id] of known) {
+        if (current.get(n) !== id) {
+          known.delete(n);
+          mandala.people[n - 1] = undefined;
+          removed = true;
+        }
+      }
+      if (removed) {
+        while (mandala.people.length && !mandala.people[mandala.people.length - 1]) mandala.people.pop();
+        mandala.hover = null;
+        hideTip();
+        mandala.rebuild();
+        updateCount();
+      }
+      const fresh = idx.items.filter(it => !known.has(it.n));
+      for (const it of fresh) known.set(it.n, it.id);
+      await loadPieces(fresh, batch => ingest(batch, !first));
     }
   } catch (err) {
     // keep showing what we have; the next poll will try again
   }
   setTimeout(() => poll(false), POLL_MS);
 }
+
+/* ---------- who made this: hover on a computer, tap on a phone ---------- */
+
+const tip = $('tip');
+
+function showTip(who, clientX, clientY) {
+  const box = canvas.parentElement.getBoundingClientRect();
+  tip.textContent = who.name || 'Anonymous';
+  tip.hidden = false;
+  const x = clientX - box.left, y = clientY - box.top;
+  const flip = x > box.width * 0.6;
+  tip.style.left = `${x}px`;
+  tip.style.top = `${y}px`;
+  tip.style.transform = `translate(${flip ? 'calc(-100% - 14px)' : '14px'}, -130%)`;
+  mandala.setHover(who.i);
+}
+
+function hideTip() {
+  tip.hidden = true;
+  mandala.setHover(null);
+}
+
+canvas.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  const who = mandala.personAtClient(e.clientX, e.clientY);
+  who ? showTip(who, e.clientX, e.clientY) : hideTip();
+});
+canvas.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTip(); });
+canvas.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse') return;
+  const who = mandala.personAtClient(e.clientX, e.clientY);
+  who ? showTip(who, e.clientX, e.clientY) : hideTip();
+});
+document.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'mouse' && e.target !== canvas) hideTip();
+});
 
 /* ---------- export ---------- */
 

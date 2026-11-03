@@ -1,6 +1,6 @@
 import {
   INDIGO, GOLD, TAU, R_DRAW, R_LOTUS, EXPORT_PX, RING_W,
-  ringGeom, ringOf, placement, slotAngle, drawLotus, drawKolamDots,
+  ringGeom, ringOf, placement, slotAngle, drawLotus, drawKolamDots, personAt, slotAtPoint,
 } from './shared.js';
 
 /** Decodes a submitted PNG into pixels the renderer can sample. */
@@ -32,6 +32,7 @@ export class Mandala {
     this.fresh = null;          // the newest person's pieces while they bloom in
     this.freshCanvas = document.createElement('canvas');
     this.rings = 1;
+    this.hover = null;          // person index whose 4 pieces are outlined
   }
 
   /** Mandala units to canvas px, leaving room for the next ring's dashed outline. */
@@ -107,9 +108,36 @@ export class Mandala {
     this.draw();
   }
 
+  /** Removes a person; their slots go back to placeholders. */
+  remove(i) {
+    this.people[i] = undefined;
+    while (this.people.length && !this.people[this.people.length - 1]) this.people.pop();
+    if (this.hover === i) this.hover = null;
+    this.rebuild();
+  }
+
+  /** The person under a point on the canvas (client coordinates), or null. */
+  personAtClient(clientX, clientY) {
+    const r = this.canvas.getBoundingClientRect();
+    const k = this.canvas.width / r.width;
+    const s = this.scale;
+    const x = ((clientX - r.left) * k - this.canvas.width / 2) / s;
+    const y = ((clientY - r.top) * k - this.canvas.width / 2) / s;
+    const at = slotAtPoint(x, y, this.rings);
+    if (!at) return null;
+    const i = personAt(at.ring, at.slot);
+    return this.people[i] ? { i, name: this.people[i].name } : null;
+  }
+
+  setHover(i) {
+    if (this.hover === i) return;
+    this.hover = i;
+    this.draw(this.fresh ? 0 : 1);
+  }
+
   /** Adds people; returns true when the newest should bloom in (i.e. the layout didn't change). */
   add(entries, { animate = false } = {}) {
-    for (const { i, pixels } of entries) this.people[i] = { pixels };
+    for (const { i, pixels, name } of entries) this.people[i] = { pixels, name };
     const rings = this.ringsFor(this.people.length);
     if (rings !== this.rings || !this.layer || !animate) {
       this.rebuild();
@@ -224,6 +252,28 @@ export class Mandala {
     ctx.arc(c, c, (ringGeom(this.rings).r2 + RING_W * 0.5) * s, 0, TAU);
     ctx.stroke();
     ctx.restore();
+
+    // the hovered person's 4 pieces
+    if (this.hover !== null && this.people[this.hover]) {
+      const place = placement(this.hover);
+      const { r1, r2, slots } = ringGeom(place.ring);
+      const step = TAU / slots;
+      ctx.save();
+      ctx.strokeStyle = '#FBF7EE';
+      ctx.lineWidth = 4 * s;
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = 'rgba(251, 247, 238, .6)';
+      ctx.shadowBlur = 10 * s;
+      for (const slot of place.slots) {
+        const a = slotAngle(slot, slots);
+        ctx.beginPath();
+        ctx.arc(c, c, r2 * s, a - step / 2, a + step / 2);
+        ctx.arc(c, c, r1 * s, a + step / 2, a - step / 2, true);
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
 
     drawLotus(ctx, c, c, (ringGeom(1).r1 - 6) * s);
   }
