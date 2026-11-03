@@ -17,7 +17,9 @@ const state = {
   tool: 'brush',
   lastWidth: SIZES.brush,
   strokes: [],
+  history: [],                          // what Undo steps back through: added, erased or cleared strokes
   current: null,
+  erasing: false,
   scale: 1,                             // canvas px per drawing unit
   dpr: 1,
 };
@@ -155,16 +157,70 @@ function toUnits(e) {
   return [(e.clientX - r.left - r.width / 2) / k, (e.clientY - r.top - r.height / 2) / k];
 }
 
+function addStroke(stroke) {
+  state.strokes.push(stroke);
+  state.history.push({ type: 'add', stroke });
+  redrawInk();
+  updateButtons();
+}
+
+/* ---------- the eraser: a tap removes the whole line or stamp under it ---------- */
+
+const ERASE_REACH = 10;                 // drawing units of slack around what you tap
+
+function distToSegment([px, py], [ax, ay], [bx, by]) {
+  const dx = bx - ax, dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2)) : 0;
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+function hits(s, point) {
+  // the 4 repeats of the tapped point land on the original stroke if any repeat was tapped
+  for (const q of images(point[0], point[1])) {
+    if (s.tool === 'line') {
+      const pts = s.points;
+      if (pts.length === 1 && Math.hypot(q[0] - pts[0][0], q[1] - pts[0][1]) <= s.width / 2 + ERASE_REACH) return true;
+      for (let i = 1; i < pts.length; i++) {
+        if (distToSegment(q, pts[i - 1], pts[i]) <= s.width / 2 + ERASE_REACH) return true;
+      }
+    } else {
+      const [x, y] = s.points[0];
+      const a = Math.atan2(y, x);
+      const reach = s.tool === 'dot' ? s.width : s.width * 2.6;
+      const cx = s.tool === 'dot' ? x : x + Math.cos(a) * s.width * 1.4;
+      const cy = s.tool === 'dot' ? y : y + Math.sin(a) * s.width * 1.4;
+      if (Math.hypot(q[0] - cx, q[1] - cy) <= reach + ERASE_REACH) return true;
+    }
+  }
+  return false;
+}
+
+function eraseAt(point) {
+  for (let i = state.strokes.length - 1; i >= 0; i--) {
+    if (hits(state.strokes[i], point)) {
+      const [stroke] = state.strokes.splice(i, 1);
+      state.history.push({ type: 'erase', stroke, index: i });
+      redrawInk();
+      updateButtons();
+      return;
+    }
+  }
+}
+
 function onDown(e) {
   if (e.button > 0) return;
   e.preventDefault();
   hideError();
   ink.setPointerCapture?.(e.pointerId);
   const p = toUnits(e);
+  if (state.tool === 'eraser') {
+    state.erasing = true;
+    eraseAt(p);
+    return;
+  }
   if (isStamp(state.tool)) {
-    state.strokes.push({ tool: state.tool, colour: state.colour, width: state.tool === 'dot' ? state.lastWidth * 0.9 + 1.5 : state.lastWidth + 1, points: [p] });
-    redrawInk();
-    updateButtons();
+    addStroke({ tool: state.tool, colour: state.colour, width: state.tool === 'dot' ? state.lastWidth * 0.9 + 1.5 : state.lastWidth + 1, points: [p] });
     return;
   }
   state.current = { tool: 'line', colour: state.colour, width: SIZES[state.tool], points: [p] };
@@ -172,6 +228,11 @@ function onDown(e) {
 }
 
 function onMove(e) {
+  if (state.erasing) {
+    e.preventDefault();
+    eraseAt(toUnits(e));
+    return;
+  }
   if (!state.current) return;
   e.preventDefault();
   const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
@@ -188,11 +249,11 @@ function onMove(e) {
 }
 
 function onUp() {
+  state.erasing = false;
   if (!state.current) return;
-  state.strokes.push(state.current);
+  const stroke = state.current;
   state.current = null;
-  redrawInk();
-  updateButtons();
+  addStroke(stroke);
 }
 
 ink.addEventListener('pointerdown', onDown);
@@ -223,17 +284,33 @@ for (const c of COLOURS) {
 }
 
 const toolBox = $('tools');
+const eraser = $('eraser');
+function selectTool(tool) {
+  state.tool = tool;
+  if (SIZES[tool]) state.lastWidth = SIZES[tool];
+  for (const el of toolBox.children) el.setAttribute('aria-pressed', String(el.dataset.tool === tool));
+  eraser.setAttribute('aria-pressed', String(tool === 'eraser'));
+}
 toolBox.addEventListener('click', e => {
   const b = e.target.closest('.tool');
-  if (!b) return;
-  state.tool = b.dataset.tool;
-  if (SIZES[state.tool]) state.lastWidth = SIZES[state.tool];
-  for (const el of toolBox.children) el.setAttribute('aria-pressed', String(el === b));
+  if (b) selectTool(b.dataset.tool);
 });
+eraser.addEventListener('click', () => selectTool(state.tool === 'eraser' ? 'brush' : 'eraser'));
+// picking a colour means you want to draw again
+swatchBox.addEventListener('click', () => { if (state.tool === 'eraser') selectTool('brush'); });
 
 let clearArmed = false;
 $('undo').addEventListener('click', () => {
-  state.strokes.pop();
+  const last = state.history.pop();
+  if (!last) return;
+  if (last.type === 'add') {
+    const i = state.strokes.lastIndexOf(last.stroke);
+    if (i >= 0) state.strokes.splice(i, 1);
+  } else if (last.type === 'erase') {
+    state.strokes.splice(Math.min(last.index, state.strokes.length), 0, last.stroke);
+  } else if (last.type === 'clear') {
+    state.strokes = last.strokes;
+  }
   redrawInk();
   updateButtons();
 });
@@ -246,13 +323,14 @@ $('clear').addEventListener('click', () => {
   }
   clearArmed = false;
   $('clear').textContent = 'Start over';
+  if (state.strokes.length) state.history.push({ type: 'clear', strokes: state.strokes });
   state.strokes = [];
   redrawInk();
   updateButtons();
 });
 
 function updateButtons() {
-  $('undo').disabled = state.strokes.length === 0;
+  $('undo').disabled = state.history.length === 0;
 }
 
 function showError(msg) {
@@ -365,6 +443,7 @@ function drawMap(cv, place) {
 
 $('again').addEventListener('click', () => {
   state.strokes = [];
+  state.history = [];
   $('name').value = '';
   $('doneView').hidden = true;
   $('drawView').hidden = false;
@@ -383,3 +462,4 @@ try {
   const saved = JSON.parse(localStorage.getItem('petal-mandala') || 'null');
   if (saved && saved.n) showDone(saved.n, saved.mine);
 } catch (e) {}
+

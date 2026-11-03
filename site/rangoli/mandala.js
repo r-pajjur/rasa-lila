@@ -137,7 +137,7 @@ export class Mandala {
 
   /** Adds people; returns true when the newest should bloom in (i.e. the layout didn't change). */
   add(entries, { animate = false } = {}) {
-    for (const { i, pixels, name } of entries) this.people[i] = { pixels, name };
+    for (const { i, id, pixels, name } of entries) this.people[i] = { id, pixels, name };
     const rings = this.ringsFor(this.people.length);
     if (rings !== this.rings || !this.layer || !animate) {
       this.rebuild();

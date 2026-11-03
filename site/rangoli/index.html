@@ -30,11 +30,32 @@
   .workspace { display: flex; flex-direction: column; gap: 12px; }
   .controls { display: flex; flex-direction: column; gap: 12px; }
 
+  /* on a phone the drawing can't scroll the page, so a strip beside it always does */
+  .stage-row { display: flex; justify-content: center; align-items: stretch; gap: 10px; }
+  .scroller {
+    flex: 0 0 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border: 1.5px dashed var(--ink-soft);
+    border-radius: 25px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    font-weight: 600;
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .scroller span { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .06em; }
+  .scroller svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
   .stage {
     position: relative;
-    width: min(100%, 62vh, 520px);
+    width: min(calc(100vw - 92px), 62vh, 520px);
     aspect-ratio: 1;
-    margin: 0 auto;
+    flex: none;
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
@@ -79,7 +100,8 @@
   .tool[aria-pressed="true"] { background: var(--ink); color: var(--paper); box-shadow: 3px 3px 0 var(--marigold); }
 
   .row { display: flex; gap: 8px; }
-  .row .btn { flex: 1; }
+  .row .btn { flex: 1; padding: 0 8px; }
+  .row .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); box-shadow: 3px 3px 0 var(--marigold); }
   .btn-danger { color: var(--kumkum); }
 
   .name { display: flex; flex-direction: column; gap: 2px; }
@@ -96,6 +118,7 @@
   @media (min-width: 820px) and (min-height: 560px) {
     .workspace { flex-direction: row; align-items: flex-start; gap: 32px; }
     .stage { width: min(56vw, calc(100vh - 140px), 620px); margin: 0; flex: none; }
+    .scroller { display: none; }
     .controls { flex: 1; min-width: 0; max-width: 380px; padding-top: 8px; }
     .hint { text-align: left; }
   }
@@ -115,10 +138,17 @@
   <div class="strip" aria-hidden="true"></div>
 
   <section id="drawView" class="workspace">
+    <div class="stage-row">
     <div class="stage" id="stage">
       <canvas id="base" aria-hidden="true"></canvas>
       <canvas id="ink" role="img" aria-label="Your rangoli. Draw with your finger or mouse; every stroke repeats in all 4 quarters."></canvas>
       <canvas id="guides" class="top" aria-hidden="true"></canvas>
+    </div>
+    <div class="scroller" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><path d="M5 12l5-5 5 5" /></svg>
+      <span>Scroll here</span>
+      <svg viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" /></svg>
+    </div>
     </div>
 
     <div class="controls">
@@ -138,6 +168,7 @@
       </div>
 
       <div class="row">
+        <button type="button" class="btn" id="eraser" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true" width="18" height="18" fill="currentColor"><path d="M12.6 2.6a2 2 0 0 1 2.8 0l2 2a2 2 0 0 1 0 2.8L10 14.8H17v1.7H6.8l-4.2-4.2a2 2 0 0 1 0-2.8zM5 9.9l-1.2 1.2 3.7 3.7H8l1.6-1.6z"/></svg>Eraser</button>
         <button type="button" class="btn" id="undo">Undo</button>
         <button type="button" class="btn btn-danger" id="clear">Start over</button>
       </div>

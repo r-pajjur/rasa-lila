@@ -44,6 +44,35 @@
     pointer-events: none;
   }
 
+  .stage canvas#mandala { cursor: pointer; }
+  .preview {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, .6);
+  }
+  .preview-card {
+    width: min(100%, 420px);
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 22px 18px;
+    background: var(--paper);
+    color: var(--ink);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: 6px 6px 0 var(--marigold);
+  }
+  .preview-card canvas { width: min(100%, 360px, calc(100vh - 220px)); aspect-ratio: 1; }
+  .preview-name { font: 400 30px/1.1 var(--font-display); text-align: center; overflow-wrap: anywhere; }
+  .preview-note { margin: -4px 0 4px; font-size: 15px; color: var(--ink-soft); }
+
   .toast {
     position: absolute;
     left: 0;
@@ -139,6 +168,15 @@
     <button type="button" class="btn save" id="save">Save the mandala as an image</button>
   </aside>
 </main>
+
+<div class="preview" id="preview" hidden>
+  <div class="preview-card" role="dialog" aria-modal="true" aria-labelledby="previewName">
+    <canvas id="previewCircle" width="720" height="720" role="img" aria-label="The whole rangoli this person drew"></canvas>
+    <div class="preview-name" id="previewName"></div>
+    <p class="preview-note">Their rangoli, before it was cut into 4.</p>
+    <button type="button" class="btn" id="previewClose">Close</button>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script type="module" src="display.js"></script>

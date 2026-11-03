@@ -189,6 +189,24 @@ export function drawLotus(ctx, cx, cy, r) {
   ctx.restore();
 }
 
+/** One person's whole circle as they drew it: their PNG on the black ground, with the rim and lotus. */
+export function drawCircle(ctx, size, img) {
+  const c = size / 2, edge = R_DRAW + 14, s = c / edge;
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = GROUND;
+  ctx.beginPath();
+  ctx.arc(c, c, edge * s, 0, TAU);
+  ctx.fill();
+  const d = R_DRAW * 2 * s;
+  ctx.drawImage(img, c - d / 2, c - d / 2, d, d);
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = Math.max(2, 2.5 * s);
+  ctx.beginPath();
+  ctx.arc(c, c, edge * s - ctx.lineWidth / 2, 0, TAU);
+  ctx.stroke();
+  drawLotus(ctx, c, c, (R_LOTUS - 4) * s);
+}
+
 /** Faint kolam guide dots on rings between rMin and rMax. */
 export function drawKolamDots(ctx, cx, cy, rMin, rMax, scale, alpha) {
   ctx.save();

@@ -1,4 +1,4 @@
-import { ringOf, api, loadPieces } from '../shared.js';
+import { ringOf, api, loadPieces, drawCircle } from '../shared.js';
 import { Mandala, decode } from '../mandala.js';
 
 const $ = id => document.getElementById(id);
@@ -64,7 +64,7 @@ function bloomNext() {
   const d = cache.get(id);
   const i = shown.length;
   shown.push(id);
-  const animated = mandala.add([{ i, pixels: d.pixels, name: d.name }], { animate: true });
+  const animated = mandala.add([{ i, id, pixels: d.pixels, name: d.name }], { animate: true });
   updateCount();
   showToast(d);
   if (!animated) {
@@ -88,7 +88,7 @@ function bloomNext() {
 function relayout(ids) {
   queue = [];
   shown = ids.slice();
-  mandala.people = shown.map(id => ({ pixels: cache.get(id).pixels, name: cache.get(id).name }));
+  mandala.people = shown.map(id => ({ id, pixels: cache.get(id).pixels, name: cache.get(id).name }));
   mandala.hover = null;
   hideTip();
   mandala.rebuild();
@@ -167,19 +167,45 @@ function hideTip() {
 }
 
 canvas.addEventListener('pointermove', e => {
-  if (e.pointerType !== 'mouse') return;
+  if (e.pointerType !== 'mouse' || !preview.hidden) return;
   const who = mandala.personAtClient(e.clientX, e.clientY);
   who ? showTip(who, e.clientX, e.clientY) : hideTip();
 });
-canvas.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTip(); });
-canvas.addEventListener('pointerdown', e => {
-  if (e.pointerType === 'mouse') return;
+canvas.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && preview.hidden) hideTip(); });
+
+/* ---------- click or tap a piece: see that person's whole rangoli ---------- */
+
+const preview = $('preview');
+let lastFocus = null;
+
+canvas.addEventListener('click', e => {
   const who = mandala.personAtClient(e.clientX, e.clientY);
-  who ? showTip(who, e.clientX, e.clientY) : hideTip();
+  if (!who) return;
+  const person = mandala.people[who.i];
+  const entry = person && cache.get(person.id);
+  if (!entry) return;
+  const img = new Image();
+  img.onload = () => {
+    tip.hidden = true;
+    mandala.setHover(who.i);
+    drawCircle($('previewCircle').getContext('2d'), 720, img);
+    $('previewName').textContent = who.name || 'Anonymous';
+    lastFocus = document.activeElement;
+    preview.hidden = false;
+    $('previewClose').focus();
+  };
+  img.src = entry.image;
 });
-document.addEventListener('pointerdown', e => {
-  if (e.pointerType !== 'mouse' && e.target !== canvas) hideTip();
-});
+
+function closePreview() {
+  if (preview.hidden) return;
+  preview.hidden = true;
+  mandala.setHover(null);
+  lastFocus?.focus?.();
+}
+$('previewClose').addEventListener('click', closePreview);
+preview.addEventListener('click', e => { if (e.target === preview) closePreview(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
 
 /* ---------- export ---------- */
 
