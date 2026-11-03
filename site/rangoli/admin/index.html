@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Petal Mandala · Admin</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="../style.css" />
+<style>
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  h1 { margin: 0; font: 400 32px/1.1 var(--font-display); }
+  .login { display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .bar .spacer { flex: 1; }
+  .summary { margin: 0; color: var(--ink-soft); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+  .card { display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--paper-light); border: var(--border); border-radius: var(--radius); }
+  .card img { width: 100%; aspect-ratio: 1; background: var(--ink); border-radius: 50%; display: block; }
+  .card .who { font-weight: 600; font-size: 16px; overflow-wrap: anywhere; }
+  .card .when { font-size: 13px; color: var(--ink-soft); }
+  .btn-danger { color: var(--kumkum); border-color: var(--kumkum); }
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(#grain)" /></svg>
+</div>
+
+<main class="page">
+  <header class="brand">
+    <img src="../logo.png" alt="Chinmaya Mission Cleveland-Niagara" />
+    <div>
+      <div class="brand-name">Petal Mandala</div>
+      <div class="brand-sub">Admin</div>
+    </div>
+  </header>
+  <div class="strip" aria-hidden="true"></div>
+
+  <form class="login" id="login">
+    <label for="password">Admin password</label>
+    <input id="password" type="password" autocomplete="current-password" />
+    <p class="error" id="loginError" role="alert" hidden></p>
+    <button type="submit" class="btn btn-primary">Open admin</button>
+  </form>
+
+  <section id="admin" hidden style="display:flex;flex-direction:column;gap:20px">
+    <div class="bar">
+      <h1>Every rangoli</h1>
+      <span class="spacer"></span>
+      <a class="btn" href="../display/">Open the display</a>
+      <button type="button" class="btn" id="zip">Download all</button>
+      <button type="button" class="btn btn-danger" id="reset">Reset the mandala</button>
+    </div>
+    <p class="summary" id="summary">Loading…</p>
+    <p class="error" id="adminError" role="alert" hidden></p>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script type="module">
+  import { api, loadAllSince } from '../shared.js';
+
+  const $ = id => document.getElementById(id);
+  let password = '';
+  let entries = [];
+
+  try { password = sessionStorage.getItem('rangoli-admin') || ''; } catch (e) {}
+  if (password) open().catch(() => {});
+
+  $('login').addEventListener('submit', async e => {
+    e.preventDefault();
+    password = $('password').value;
+    try {
+      await open();
+      try { sessionStorage.setItem('rangoli-admin', password); } catch (err) {}
+    } catch (err) {
+      $('loginError').textContent = err.message;
+      $('loginError').hidden = false;
+    }
+  });
+
+  async function open() {
+    await api.check(password);
+    $('login').hidden = true;
+    $('admin').hidden = false;
+    await load();
+  }
+
+  async function load() {
+    entries = [];
+    await loadAllSince(0, async batch => { entries.push(...batch); });
+    $('summary').textContent = entries.length
+      ? `${entries.length} ${entries.length === 1 ? 'rangoli' : 'rangolis'} so far. Everything is deleted automatically two weeks after it was added.`
+      : 'Nobody has added a rangoli yet.';
+    const grid = $('grid');
+    grid.innerHTML = '';
+    for (const e of entries) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const img = document.createElement('img');
+      img.src = e.image;
+      img.alt = e.name ? `${e.name}’s rangoli` : 'A rangoli';
+      const who = document.createElement('div');
+      who.className = 'who';
+      who.textContent = `${e.n}. ${e.name || 'No name'}`;
+      const when = document.createElement('div');
+      when.className = 'when';
+      when.textContent = new Date(e.at).toLocaleString();
+      card.append(img, who, when);
+      grid.append(card);
+    }
+  }
+
+  $('zip').addEventListener('click', async () => {
+    if (!entries.length || !window.JSZip) return;
+    const zip = new JSZip();
+    for (const e of entries) {
+      const safe = (e.name || 'no-name').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+      zip.file(`${String(e.n).padStart(3, '0')}-${safe}.png`, e.image.split(',')[1], { base64: true });
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'petal-mandala-rangolis.zip';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  });
+
+  let armed = false;
+  $('reset').addEventListener('click', async () => {
+    const btn = $('reset');
+    if (!armed) {
+      armed = true;
+      btn.textContent = 'Click again to delete everything';
+      setTimeout(() => { armed = false; btn.textContent = 'Reset the mandala'; }, 4000);
+      return;
+    }
+    armed = false;
+    btn.textContent = 'Reset the mandala';
+    try {
+      await api.reset(password);
+      await load();
+    } catch (err) {
+      $('adminError').textContent = err.message;
+      $('adminError').hidden = false;
+    }
+  });
+</script>
+</body>
+</html>

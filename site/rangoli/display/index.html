@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Petal Mandala · Display</title>
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#1E1B4B" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="../style.css" />
+<style>
+  html, body { height: 100%; background: var(--ink); overflow: hidden; }
+  /* grain over the mandala too, so its square never shows against the page */
+  .grain { z-index: 2; }
+
+  .screen {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(20px, 3.5vw, 56px);
+    padding: 16px clamp(16px, 3.5vw, 60px);
+  }
+
+  .stage { position: relative; flex: none; width: min(calc(100vh - 32px), calc(100vw - 460px)); aspect-ratio: 1; }
+  .stage canvas { width: 100%; height: 100%; display: block; }
+
+  .toast {
+    position: absolute;
+    left: 0;
+    bottom: 2%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px 8px 10px;
+    background: var(--paper);
+    color: var(--ink);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: 4px 4px 0 var(--magenta);
+    font-size: clamp(15px, 1.4vw, 20px);
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .4s ease, transform .4s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+  .toast img { width: 40px; height: 40px; }
+  .toast b { font: 400 1.15em var(--font-display); }
+
+  .panel {
+    position: relative;
+    flex: 0 1 400px;
+    min-width: 0;
+    margin-right: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2.2vh, 20px);
+    padding: clamp(18px, 2.6vh, 28px) 26px;
+    background: var(--paper);
+    color: var(--ink);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: 6px 6px 0 var(--marigold);
+  }
+  .panel .brand img { width: 76px; height: 76px; }
+  .eyebrow { font-size: 14px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--kumkum); }
+  .panel h1 { margin: 0; font: 400 clamp(36px, 3.6vw, 52px)/1 var(--font-display); }
+  .panel p { margin: 0; font-size: clamp(16px, 1.3vw, 19px); color: var(--ink-soft); }
+
+  .join { display: flex; gap: 18px; align-items: center; }
+  .qr { flex: none; width: clamp(110px, 10vw, 150px); aspect-ratio: 1; background: #fff; border: var(--border); border-radius: var(--radius); padding: 6px; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .join .url { font-size: clamp(18px, 1.6vw, 23px); font-weight: 700; overflow-wrap: break-word; line-height: 1.2; }
+
+  .count { display: flex; align-items: center; gap: 14px; padding-top: 14px; border-top: var(--border); }
+  .count b { font: 400 clamp(48px, 4.6vw, 66px)/.9 var(--font-display); color: var(--magenta); font-variant-numeric: tabular-nums; }
+
+  .save { align-self: flex-start; min-height: 40px; font-size: 15px; }
+
+  @media (max-width: 860px) {
+    html, body { overflow: auto; height: auto; }
+    .screen { flex-direction: column; height: auto; }
+    .stage { width: min(100%, 640px); }
+    .panel { flex: none; width: min(100%, 640px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(#grain)" /></svg>
+</div>
+
+<main class="screen">
+  <div class="stage">
+    <canvas id="mandala" role="img" aria-label="The community mandala"></canvas>
+    <div class="toast" id="toast" aria-live="polite"><img id="toastImg" alt="" /><span id="toastText"></span></div>
+  </div>
+
+  <aside class="panel">
+    <div class="brand">
+      <img src="../logo.png" alt="Chinmaya Mission Cleveland-Niagara" />
+      <div>
+        <div class="eyebrow">Diwali 2026</div>
+        <div class="brand-sub" style="font-size:17px">Vichara Gurukula</div>
+      </div>
+    </div>
+    <div class="strip" aria-hidden="true"></div>
+    <h1>Petal Mandala</h1>
+    <p>Draw a small rangoli on your phone or computer. We cut it into 4 and it becomes part of this one.</p>
+    <div class="join">
+      <div class="qr" id="qr" aria-label="QR code to the drawing page" role="img"></div>
+      <div>
+        <p style="font-size:15px">Scan, or go to</p>
+        <div class="url" id="url"></div>
+      </div>
+    </div>
+    <div class="count">
+      <b id="count">0</b>
+      <span id="countText">Be the first to add a rangoli.</span>
+    </div>
+    <button type="button" class="btn save" id="save">Save the mandala as an image</button>
+  </aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script type="module" src="display.js"></script>
+</body>
+</html>
