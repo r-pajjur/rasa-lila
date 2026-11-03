@@ -1,23 +1,30 @@
 /**
  * Shared by the draw, display and admin pages: colours, geometry, the lotus, the API.
  *
- * How the mandala works: each person draws a whole circle with 8-way mirror symmetry.
- * It's cut into 4 quarters, and each quarter is bent into a slot of a ring, 90° apart.
- * Ring k has 8k slots, so it holds 2k people. People fill a ring at alternating positions,
- * so even a half-full ring stays balanced.
+ * How the mandala works: each person draws a whole circle, where every stroke repeats in
+ * all 4 quarters. It's cut into those 4 quarters, and each quarter is bent into a slot of a
+ * ring, 90° apart. Ring k has 8k slots, so it holds 2k people. People fill a ring at
+ * alternating positions, so even a half-full ring stays balanced.
  */
 
+/* rangoli powder colours, in two rows of six on a phone */
 export const COLOURS = [
   { id: 'marigold', name: 'Marigold', hex: '#F59E0B' },
   { id: 'vermilion', name: 'Vermilion', hex: '#E2452B' },
-  { id: 'turmeric', name: 'Turmeric', hex: '#FACC15' },
+  { id: 'kumkum', name: 'Kumkum red', hex: '#B3202A' },
+  { id: 'rose', name: 'Rose pink', hex: '#F06A9B' },
   { id: 'magenta', name: 'Magenta', hex: '#C2185B' },
+  { id: 'violet', name: 'Violet', hex: '#8E5BD0' },
+  { id: 'turmeric', name: 'Turmeric', hex: '#FACC15' },
+  { id: 'parrot', name: 'Parrot green', hex: '#8BC34A' },
+  { id: 'leaf', name: 'Leaf green', hex: '#3E8E3A' },
+  { id: 'sky', name: 'Sky blue', hex: '#4FB8E8' },
   { id: 'peacock', name: 'Peacock blue', hex: '#0E7C86' },
-  { id: 'leaf', name: 'Leaf green', hex: '#4D9A3A' },
   { id: 'white', name: 'White', hex: '#FBF7EE' },
 ];
 
-export const INDIGO = '#1E1B4B';
+/* The rangoli is laid on black, like powder on a dark floor. */
+export const GROUND = '#0B0A0A';
 export const GOLD = '#F7AD2F';
 export const TAU = Math.PI * 2;
 
@@ -92,10 +99,73 @@ export function petalPath(ctx, x, y, length, width, a) {
   ctx.bezierCurveTo(...p(length * 0.75, -width * 0.9), ...p(length * 0.25, -width), x, y);
 }
 
+/*
+ * Stamps, drawn at (x, y) pointing outward along angle a, sized by w (the brush width).
+ * Each adds to the current path; the flower's centre is punched out so it reads as a flower.
+ */
+export const STAMPS = {
+  petal(ctx, x, y, w, a) {
+    ctx.beginPath();
+    petalPath(ctx, x, y, w * 4.2, w * 1.5, a);
+    ctx.fill();
+  },
+  flower(ctx, x, y, w, a) {
+    ctx.beginPath();
+    for (let k = 0; k < 4; k++) petalPath(ctx, x, y, w * 2.6, w * 1.15, a + Math.PI / 4 + (k * Math.PI) / 2);
+    ctx.fill();
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, w * 0.55, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(x, y, w * 0.28, 0, TAU);
+    ctx.fill();
+  },
+  diya(ctx, x, y, w, a) {
+    // the bowl sits inward, the flame points outward
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(a);
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.2, -w * 1.9);
+    ctx.quadraticCurveTo(-w * 2.3, -w * 1.6, -w * 2.1, 0);
+    ctx.quadraticCurveTo(-w * 2.3, w * 1.6, -w * 0.2, w * 1.9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    petalPath(ctx, w * 0.35, 0, w * 2.6, w * 0.8, 0);
+    ctx.fill();
+    ctx.restore();
+  },
+  mango(ctx, x, y, w, a) {
+    // a paisley: round body inward, tip curling to one side as it points outward
+    const r = w * 1.35;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(a);
+    ctx.beginPath();
+    ctx.moveTo(-r, 0);
+    ctx.bezierCurveTo(-r, -1.35 * r, r * 0.9, -1.4 * r, r * 1.25, -0.35 * r);
+    ctx.bezierCurveTo(r * 1.55, r * 0.45, r * 2.3, r * 0.5, r * 2.55, -0.45 * r);
+    ctx.bezierCurveTo(r * 2.4, r * 1.05, r * 1.1, r * 1.35, -0.1 * r, r * 1.05);
+    ctx.bezierCurveTo(-0.65 * r, r * 0.9, -r, r * 0.5, -r, 0);
+    ctx.fill();
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(-0.05 * r, 0.05 * r, r * 0.35, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  },
+};
+
 /** The fixed lotus at the centre of every circle and of the mandala. */
 export function drawLotus(ctx, cx, cy, r) {
   ctx.save();
-  ctx.fillStyle = INDIGO;
+  ctx.fillStyle = GROUND;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, TAU);
   ctx.fill();

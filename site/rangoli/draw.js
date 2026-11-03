@@ -1,6 +1,6 @@
 import {
-  COLOURS, INDIGO, GOLD, TAU, R_DRAW, R_LOTUS, EXPORT_PX,
-  drawLotus, drawKolamDots, petalPath, placement, ringGeom, slotAngle, api,
+  COLOURS, GROUND, GOLD, TAU, R_DRAW, R_LOTUS, EXPORT_PX,
+  STAMPS, drawLotus, drawKolamDots, placement, ringGeom, slotAngle, api,
 } from './shared.js';
 
 const $ = id => document.getElementById(id);
@@ -9,7 +9,7 @@ const base = $('base'), ink = $('ink'), guides = $('guides');
 
 /* Strokes are kept in drawing units around the centre, so undo and resizing just redraw them. */
 const SIZES = { thin: 3, brush: 7, thick: 13 };
-const STAMP = { dot: 6, petal: 1 };
+const isStamp = tool => tool === 'dot' || tool in STAMPS;
 const EDGE = R_DRAW + 14;               // the circle's rim, with a little border
 
 const state = {
@@ -22,9 +22,9 @@ const state = {
   dpr: 1,
 };
 
-/* The 8 images of a point: 4 rotations, each mirrored. Cut lines and quarter centres are all mirror lines. */
+/* The 4 images of a point: one in each quarter, turned 90° each time. */
 function images(x, y) {
-  return [[x, y], [-y, x], [-x, -y], [y, -x], [-x, y], [-y, -x], [x, -y], [y, x]];
+  return [[x, y], [-y, x], [-x, -y], [y, -x]];
 }
 
 /* ---------- drawing ---------- */
@@ -47,23 +47,23 @@ function withCircle(ctx, scale, cx, cy, fn) {
 
 function paintStroke(ctx, s, from = 0) {
   ctx.fillStyle = ctx.strokeStyle = hexOf(s.colour);
-  if (s.tool === 'dot' || s.tool === 'petal') {
+  if (isStamp(s.tool)) {
     const [x, y] = s.points[0];
     for (const [px, py] of images(x, y)) {
-      ctx.beginPath();
       if (s.tool === 'dot') {
+        ctx.beginPath();
         ctx.arc(px, py, s.width, 0, TAU);
+        ctx.fill();
       } else {
-        petalPath(ctx, px, py, s.width * 4.2, s.width * 1.5, Math.atan2(py, px));
+        STAMPS[s.tool](ctx, px, py, s.width, Math.atan2(py, px));
       }
-      ctx.fill();
     }
     return;
   }
   ctx.lineWidth = s.width;
   ctx.lineCap = ctx.lineJoin = 'round';
   const pts = s.points;
-  for (let k = 0; k < 8; k++) {
+  for (let k = 0; k < 4; k++) {
     const map = p => images(p[0], p[1])[k];
     ctx.beginPath();
     if (pts.length === 1) {
@@ -104,7 +104,7 @@ function drawBase() {
   const ctx = base.getContext('2d');
   const c = base.width / 2, s = state.scale;
   ctx.clearRect(0, 0, base.width, base.height);
-  ctx.fillStyle = INDIGO;
+  ctx.fillStyle = GROUND;
   ctx.beginPath();
   ctx.arc(c, c, EDGE * s, 0, TAU);
   ctx.fill();
@@ -115,18 +115,15 @@ function drawGuides() {
   const ctx = guides.getContext('2d');
   const c = guides.width / 2, s = state.scale;
   ctx.clearRect(0, 0, guides.width, guides.height);
-  for (let k = 0; k < 8; k++) {
-    const a = (k * TAU) / 8 - Math.PI / 2;
-    const cut = k % 2 === 1;
-    ctx.save();
-    ctx.strokeStyle = cut ? GOLD : 'rgba(251, 247, 238, .3)';
-    ctx.lineWidth = (cut ? 2.4 : 1) * s;
-    ctx.setLineDash(cut ? [] : [3 * s, 5 * s]);
+  // the 4 cut lines, on the diagonals
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = 2.4 * s;
+  for (let k = 0; k < 4; k++) {
+    const a = Math.PI / 4 + (k * TAU) / 4;
     ctx.beginPath();
     ctx.moveTo(c + Math.cos(a) * (R_LOTUS + 4) * s, c + Math.sin(a) * (R_LOTUS + 4) * s);
     ctx.lineTo(c + Math.cos(a) * (EDGE - 1) * s, c + Math.sin(a) * (EDGE - 1) * s);
     ctx.stroke();
-    ctx.restore();
   }
   ctx.strokeStyle = GOLD;
   ctx.lineWidth = 2.5 * s;
@@ -164,7 +161,7 @@ function onDown(e) {
   hideError();
   ink.setPointerCapture?.(e.pointerId);
   const p = toUnits(e);
-  if (state.tool === 'dot' || state.tool === 'petal') {
+  if (isStamp(state.tool)) {
     state.strokes.push({ tool: state.tool, colour: state.colour, width: state.tool === 'dot' ? state.lastWidth * 0.9 + 1.5 : state.lastWidth + 1, points: [p] });
     redrawInk();
     updateButtons();
@@ -284,7 +281,7 @@ function previewPng() {
   cv.width = cv.height = 240;
   const ctx = cv.getContext('2d');
   const s = 120 / EDGE;
-  ctx.fillStyle = INDIGO;
+  ctx.fillStyle = GROUND;
   ctx.beginPath();
   ctx.arc(120, 120, EDGE * s, 0, TAU);
   ctx.fill();

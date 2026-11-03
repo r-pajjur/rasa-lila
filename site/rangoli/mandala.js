@@ -1,5 +1,5 @@
 import {
-  INDIGO, GOLD, TAU, R_DRAW, R_LOTUS, EXPORT_PX, RING_W,
+  GROUND, GOLD, TAU, R_DRAW, R_LOTUS, EXPORT_PX, RING_W,
   ringGeom, ringOf, placement, slotAngle, drawLotus, drawKolamDots, personAt, slotAtPoint,
 } from './shared.js';
 
@@ -171,7 +171,7 @@ export class Mandala {
       filled.add(`${p.ring}:${p.j}`);
     }
 
-    ctx.fillStyle = INDIGO;
+    ctx.fillStyle = GROUND;
     ctx.fillRect(0, 0, W, W);
     drawKolamDots(ctx, c, c, ringGeom(1).r1 + 6, ringGeom(this.rings).r2 - 6, s, 0.1);
 
@@ -210,7 +210,7 @@ export class Mandala {
       for (let slot = 0; slot < slots; slot++) {
         const a = slotAngle(slot, slots) - step / 2;
         const ca = Math.cos(a), sa = Math.sin(a);
-        for (const [colour, width] of [[INDIGO, 6], [GOLD, 1.6]]) {
+        for (const [colour, width] of [[GROUND, 6], [GOLD, 1.6]]) {
           ctx.strokeStyle = colour;
           ctx.globalAlpha = colour === GOLD ? 0.85 : 1;
           ctx.lineWidth = width * s;
