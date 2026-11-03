@@ -213,9 +213,10 @@ export function drawKolamDots(ctx, cx, cy, rMin, rMax, scale, alpha) {
   ctx.fillStyle = `rgba(251, 247, 238, ${alpha})`;
   for (let i = 1; i < 7; i++) {
     const r = rMin + ((rMax - rMin) * i) / 7;
-    const n = Math.floor((TAU * r) / 22);
+    // a multiple of 8, offset half a step, so every quarter gets the same dots and none sit on a cut line
+    const n = Math.max(8, Math.round((TAU * r) / 22 / 8) * 8);
     for (let j = 0; j < n; j++) {
-      const a = (j * TAU) / n;
+      const a = ((j + 0.5) * TAU) / n;
       ctx.beginPath();
       ctx.arc(cx + Math.cos(a) * r * scale, cy + Math.sin(a) * r * scale, 1.3 * scale, 0, TAU);
       ctx.fill();
