@@ -199,6 +199,17 @@ function closePreview() {
   lastFocus?.focus?.();
 }
 $('previewClose').addEventListener('click', closePreview);
+$('previewDownload').addEventListener('click', () => {
+  const name = $('previewName').textContent.trim();
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'anonymous';
+  $('previewCircle').toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `rangoli-${slug}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }, 'image/png');
+});
 preview.addEventListener('click', e => { if (e.target === preview) closePreview(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
 

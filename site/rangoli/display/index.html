@@ -71,7 +71,8 @@
   }
   .preview-card canvas { width: min(100%, 360px, calc(100vh - 220px)); aspect-ratio: 1; }
   .preview-name { font: 400 30px/1.1 var(--font-display); text-align: center; overflow-wrap: anywhere; }
-  .preview-note { margin: -4px 0 4px; font-size: 15px; color: var(--ink-soft); }
+  .preview-actions { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
+  .preview-actions .btn { flex: 1; min-height: 50px; font-size: 17px; }
 
   .toast {
     position: absolute;
@@ -170,8 +171,10 @@
   <div class="preview-card" role="dialog" aria-modal="true" aria-labelledby="previewName">
     <canvas id="previewCircle" width="720" height="720" role="img" aria-label="The whole rangoli this person drew"></canvas>
     <div class="preview-name" id="previewName"></div>
-    <p class="preview-note">Their rangoli, before it was cut into 4.</p>
-    <button type="button" class="btn" id="previewClose">Close</button>
+    <div class="preview-actions">
+      <button type="button" class="btn btn-primary" id="previewDownload">Download</button>
+      <button type="button" class="btn" id="previewClose">Close</button>
+    </div>
   </div>
 </div>
 
