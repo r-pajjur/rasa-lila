@@ -3,7 +3,7 @@
 A pilgrimage game for breakout groups of 3 to 8 people, drawn in an Oregon Trail pixel-art style. Each group creates a room and everyone joins on their own device. Players take turns making decisions, and every route reaches the temple. Every route takes between 10 and 14 decisions.
 
 ## Try it right now (no setup)
-Open `index.html` through any local server, for example by running `npx serve` in the repo folder and visiting `/yatra/`. While `firebase-config.js` is empty, the site runs in **local test mode**: rooms sync between tabs of the same browser only. Create a room in one tab and join it from two more tabs.
+Open `index.html` through any local server, for example by running `npx serve site` in the rasa-lila repo and visiting `/seekingculture/yatra/`. While `firebase-config.js` is empty, the site runs in **local test mode**: rooms sync between tabs of the same browser only. Create a room in one tab and join it from two more tabs.
 
 ## Setup: about 10 minutes, one time only
 
@@ -28,13 +28,13 @@ Open `index.html` through any local server, for example by running `npx serve` i
 5. Paste those values into `firebase-config.js`. Make sure `databaseURL` is filled in. If it's missing, copy the URL shown at the top of the Realtime Database page (it looks like `https://your-project-default-rtdb.firebaseio.com`, or `https://your-project-default-rtdb.<region>.firebasedatabase.app` outside the US; copy it exactly).
 
 ### 2. Deploy to Vercel
-This game lives in the `yatra/` folder of the seekingculture site, which is already on Vercel. Commit and push to GitHub and Vercel redeploys on its own. The picker at the site root links here, and `vercel.json` (at the root) adds the trailing slash so `/yatra` loads its files.
+This game lives at `site/seekingculture/yatra/` in the rasa-lila repo, served at rasa-lila.vercel.app/seekingculture/yatra/. Commit and push to `main` and Vercel redeploys on its own. The Seeking Culture page links here, and the repo's `vercel.json` adds the trailing slash so `/seekingculture/yatra` loads its files.
 
 ### 3. Dry run before class
 Open the site on 2 or 3 phones or laptops, create a room on one, join from the others, and play through once.
 
 ## Running it in class
-1. Put the link (the site root, or `/yatra/` directly) in the Zoom chat before breakouts.
+1. Put the link (rasa-lila.vercel.app/seekingculture/yatra/) in the Zoom chat before breakouts.
 2. In each breakout, one person taps **Create room** and reads the code aloud. The others tap **Join room**.
 3. The host taps **Start the journey**. Turns go in the order people joined.
 4. Only the person whose turn it is can tap a choice. The group talks it over first.
