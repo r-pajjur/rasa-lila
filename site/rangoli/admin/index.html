@@ -64,14 +64,11 @@
 
   <section id="admin" hidden style="display:flex;flex-direction:column;gap:20px">
     <div class="bar">
-      <h1>Every rangoli</h1>
-      <span class="spacer"></span>
       <a class="btn" href="../display/">Open the display</a>
       <button type="button" class="btn" id="zip">Download all</button>
       <button type="button" class="btn btn-danger" id="reset">Reset the rangoli</button>
     </div>
     <p class="summary" id="summary">Loading…</p>
-    <p class="summary" style="margin-top:-12px">Deleting a rangoli moves everyone added after it in by one place, so the big rangoli stays full.</p>
     <p class="error" id="adminError" role="alert" hidden></p>
     <div class="grid" id="grid"></div>
   </section>
@@ -112,7 +109,7 @@
     entries = [];
     await loadPieces(items, async batch => { entries.push(...batch); });
     $('summary').textContent = entries.length
-      ? `${entries.length} ${entries.length === 1 ? 'rangoli' : 'rangolis'} so far. Everything is deleted automatically two weeks after it was added.`
+      ? `${entries.length} ${entries.length === 1 ? 'rangoli' : 'rangolis'} so far`
       : 'Nobody has added a rangoli yet.';
     const grid = $('grid');
     grid.innerHTML = '';
