@@ -1,12 +1,12 @@
 /**
- * Petal Mandala's storage, on Upstash Redis (added to the project from the Vercel Marketplace).
+ * Community Rangoli's storage, on Upstash Redis (added to the project from the Vercel Marketplace).
  *   GET  /api/rangoli/?action=index&rev=R       designs in arrival order; { same: true } if nothing changed since R
  *   GET  /api/rangoli/?action=pieces&ids=a,b    the drawings for those designs (up to 10)
- *   POST /api/rangoli/?action=submit            { name, image }  -> { n }
+ *   POST /api/rangoli/?action=submit            { name, reflection, image }  -> { n }
  *   POST /api/rangoli/?action=check|reset       X-Admin-Password header
  *   POST /api/rangoli/?action=delete&id=ID      X-Admin-Password header
- * A design's place in the mandala is its position in arrival order, so deleting one moves
- * everyone after it down a place and the mandala stays packed from the centre out.
+ * A design's place in the rangoli is its position in arrival order, so deleting one moves
+ * everyone after it down a place and the rangoli stays packed from the centre out.
  * Every key expires two weeks after the last change, so nothing outlives the event.
  */
 import { randomUUID } from 'node:crypto';
@@ -17,12 +17,13 @@ const ADMIN_PASSWORD = process.env.RANGOLI_ADMIN_PASSWORD;
 
 const SEQ = 'rangoli:seq';              // arrival counter, so order never ties
 const ORDER = 'rangoli:order';          // sorted set: design id, scored by arrival
-const META = 'rangoli:meta';            // hash id -> { id, name, at }
+const META = 'rangoli:meta';            // hash id -> { id, name, reflection, at }
 const IMG = 'rangoli:img:';             // + id -> PNG data URL
 const REV = 'rangoli:rev';              // bumps on every change, so the display can skip unchanged polls
 const TTL = 60 * 60 * 24 * 14;
 const BATCH = 10;                       // keeps each response well under Vercel's size limit
 const MAX_IMAGE = 900_000;              // a 480px PNG data URL is usually 30–250 KB
+const MAX_REFLECTION = 600;
 
 // earlier layouts, converted once
 const OLD_COUNT = 'rangoli:count';
@@ -98,7 +99,7 @@ async function orderedItems() {
   ids.forEach((id, k) => {
     let meta = {};
     try { meta = JSON.parse(metas[k] || '{}'); } catch (e) {}
-    items.push({ n: items.length + 1, id, name: meta.name || '', at: meta.at || '' });
+    items.push({ n: items.length + 1, id, name: meta.name || '', reflection: meta.reflection || '', at: meta.at || '' });
   });
   return items;
 }
@@ -106,7 +107,7 @@ async function orderedItems() {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!REDIS_URL || !REDIS_TOKEN) {
-    fail(res, 503, 'The mandala’s storage isn’t connected yet.');
+    fail(res, 503, 'The rangoli’s storage isn’t connected yet.');
     return;
   }
   const action = String(req.query.action || '');
@@ -136,15 +137,17 @@ export default async function handler(req, res) {
     }
 
     if (action === 'submit' && req.method === 'POST') {
-      const { name, image } = req.body || {};
+      const { name, reflection, image } = req.body || {};
       if (typeof image !== 'string' || !image.startsWith('data:image/png;base64,') || image.length > MAX_IMAGE) {
         fail(res, 400, 'That drawing couldn’t be saved.');
         return;
       }
       const id = randomUUID();
       const cleanName = String(name || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 30);
+      // keep line breaks in a reflection, drop other control characters
+      const cleanReflection = String(reflection || '').replace(/[\u0000-\u0009\u000b-\u001f]/g, '').replace(/\n{3,}/g, '\n\n').trim().slice(0, MAX_REFLECTION);
       await redis(['SET', IMG + id, image, 'EX', String(TTL)]);
-      await redis(['HSET', META, id, JSON.stringify({ id, name: cleanName, at: new Date().toISOString() })]);
+      await redis(['HSET', META, id, JSON.stringify({ id, name: cleanName, reflection: cleanReflection, at: new Date().toISOString() })]);
       const seq = await redis(['INCR', SEQ]);          // atomic, so two people never share a place
       await redis(['ZADD', ORDER, String(seq), id]);
       const rank = await redis(['ZRANK', ORDER, id]);
@@ -199,6 +202,6 @@ export default async function handler(req, res) {
 
     fail(res, 400, 'Unknown request.');
   } catch (e) {
-    fail(res, 502, 'The mandala’s storage didn’t respond. Try again in a moment.');
+    fail(res, 502, 'The rangoli’s storage didn’t respond. Try again in a moment.');
   }
 }

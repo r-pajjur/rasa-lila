@@ -69,7 +69,7 @@ html, body {
   cursor: pointer;
   touch-action: manipulation;
 }
-.btn:focus-visible, .swatch:focus-visible, .tool:focus-visible, input:focus-visible {
+.btn:focus-visible, .swatch:focus-visible, .tool:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 3px solid var(--magenta);
   outline-offset: 2px;
 }
@@ -87,7 +87,8 @@ html, body {
 .btn[disabled] { opacity: .55; cursor: default; }
 
 label { font-size: 15px; font-weight: 600; color: var(--ink-soft); }
-input[type="text"], input[type="password"] {
+textarea { resize: vertical; min-height: 84px; padding: 10px 12px !important; height: auto !important; line-height: 1.4 !important; }
+input[type="text"], input[type="password"], textarea {
   height: 48px;
   width: 100%;
   padding: 0 12px;

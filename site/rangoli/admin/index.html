@@ -10,6 +10,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Mukta:wght@400;500;600;700&display=swap" />
 <link rel="stylesheet" href="../style.css" />
 <style>
+  /* the same black ground as the display, with paper cards on it */
+  html, body { background: #0B0A0A; color: #FBF7EE; }
+  .brand img { filter: invert(1); }
+  .brand-sub, .summary, label { color: rgba(251, 247, 238, .72); }
+  .strip { border-color: rgba(251, 247, 238, .6); }
   .page {
     position: relative;
     z-index: 1;
@@ -24,12 +29,12 @@
   .login { display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
   .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .bar .spacer { flex: 1; }
-  .summary { margin: 0; color: var(--ink-soft); }
+  .summary { margin: 0; color: rgba(251, 247, 238, .72); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
-  .card { display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--paper-light); border: var(--border); border-radius: var(--radius); }
+  .card { display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--paper); color: var(--ink); border: var(--border); border-radius: var(--radius); box-shadow: 4px 4px 0 var(--marigold); }
   .card img { width: 100%; aspect-ratio: 1; background: #0B0A0A; border-radius: 50%; display: block; }
   .card .who { font-weight: 600; font-size: 16px; overflow-wrap: anywhere; }
-  .card .when { font-size: 13px; color: var(--ink-soft); }
+  .card .note { margin: 0; font-size: 14px; line-height: 1.4; color: var(--ink-soft); white-space: pre-line; overflow-wrap: anywhere; }
   .btn-danger { color: var(--kumkum); border-color: var(--kumkum); }
   .card .del { min-height: 40px; font-size: 15px; margin-top: auto; }
 </style>
@@ -63,10 +68,10 @@
       <span class="spacer"></span>
       <a class="btn" href="../display/">Open the display</a>
       <button type="button" class="btn" id="zip">Download all</button>
-      <button type="button" class="btn btn-danger" id="reset">Reset the mandala</button>
+      <button type="button" class="btn btn-danger" id="reset">Reset the rangoli</button>
     </div>
     <p class="summary" id="summary">Loading…</p>
-    <p class="summary" style="margin-top:-12px">Deleting a rangoli moves everyone added after it in by one place, so the mandala stays full.</p>
+    <p class="summary" style="margin-top:-12px">Deleting a rangoli moves everyone added after it in by one place, so the big rangoli stays full.</p>
     <p class="error" id="adminError" role="alert" hidden></p>
     <div class="grid" id="grid"></div>
   </section>
@@ -120,9 +125,10 @@
       const who = document.createElement('div');
       who.className = 'who';
       who.textContent = `${e.n}. ${e.name || 'Anonymous'}`;
-      const when = document.createElement('div');
-      when.className = 'when';
-      when.textContent = e.at ? new Date(e.at).toLocaleString() : '';
+      const note = document.createElement('p');
+      note.className = 'note';
+      note.textContent = e.reflection || '';
+      note.hidden = !e.reflection;
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'btn btn-danger del';
@@ -147,7 +153,7 @@
           del.textContent = 'Delete';
         }
       });
-      card.append(img, who, when, del);
+      card.append(img, who, note, del);
       grid.append(card);
     }
   }
@@ -162,7 +168,7 @@
     const blob = await zip.generateAsync({ type: 'blob' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'petal-mandala-rangolis.zip';
+    a.download = 'community-rangoli-designs.zip';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   });
@@ -173,11 +179,11 @@
     if (!armed) {
       armed = true;
       btn.textContent = 'Click again to delete everything';
-      setTimeout(() => { armed = false; btn.textContent = 'Reset the mandala'; }, 4000);
+      setTimeout(() => { armed = false; btn.textContent = 'Reset the rangoli'; }, 4000);
       return;
     }
     armed = false;
-    btn.textContent = 'Reset the mandala';
+    btn.textContent = 'Reset the rangoli';
     try {
       await api.reset(password);
       await load();

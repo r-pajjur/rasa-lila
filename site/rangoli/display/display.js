@@ -8,7 +8,7 @@ const POLL_MS = 2000;
 
 let rev;                       // the server's change counter we last saw
 const cache = new Map();       // design id -> { pixels, name, image }
-let shown = [];                // design ids in the mandala, in place order
+let shown = [];                // design ids in the rangoli, in place order
 let queue = [];                // new arrivals (ids) waiting to bloom in, after `shown`
 let blooming = false;
 
@@ -79,7 +79,7 @@ function bloomNext() {
   requestAnimationFrame(step);
 }
 
-/** Lays the mandala out again from scratch, e.g. after a deletion moved everyone along. */
+/** Lays the rangoli out again from scratch, e.g. after a deletion moved everyone along. */
 function relayout(ids) {
   queue = [];
   shown = ids.slice();
@@ -113,12 +113,12 @@ async function poll(first) {
     const idx = await api.index(rev);
     if (!idx.same) {
       rev = idx.rev;
-      for (const it of idx.items) if (cache.has(it.id)) cache.get(it.id).name = it.name;
+      for (const it of idx.items) if (cache.has(it.id)) Object.assign(cache.get(it.id), { name: it.name, reflection: it.reflection });
       const missing = idx.items.filter(it => !cache.has(it.id));
       await loadPieces(missing, async batch => {
         for (const e of batch) {
           try {
-            cache.set(e.id, { pixels: await decode(e.image), name: e.name, image: e.image });
+            cache.set(e.id, { pixels: await decode(e.image), name: e.name, reflection: e.reflection || '', image: e.image });
           } catch (err) {
             // a broken image is left out rather than stopping the display
           }
@@ -185,6 +185,9 @@ canvas.addEventListener('click', e => {
     mandala.setHover(who.i);
     drawCircle($('previewCircle').getContext('2d'), 720, img);
     $('previewName').textContent = who.name || 'Anonymous';
+    $('previewReflection').textContent = entry.reflection || '';
+    $('previewReflection').hidden = !entry.reflection;
+    previewing = { img, name: who.name || 'Anonymous', reflection: entry.reflection || '' };
     lastFocus = document.activeElement;
     preview.hidden = false;
     $('previewClose').focus();
@@ -199,16 +202,11 @@ function closePreview() {
   lastFocus?.focus?.();
 }
 $('previewClose').addEventListener('click', closePreview);
-$('previewDownload').addEventListener('click', () => {
-  const name = $('previewName').textContent.trim();
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'anonymous';
-  $('previewCircle').toBlob(blob => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `rangoli-${slug}.png`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  }, 'image/png');
+$('previewDownload').addEventListener('click', async () => {
+  if (!previewing) return;
+  const cv = await rangoliCard(previewing);
+  const slug = previewing.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'anonymous';
+  save(cv, `rangoli-${slug}.png`);
 });
 preview.addEventListener('click', e => { if (e.target === preview) closePreview(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
@@ -225,16 +223,127 @@ $('save').addEventListener('click', async () => {
   const big = new Mandala(cv);
   big.people = mandala.people.slice();
   big.rebuild();
+  const logo = await watermarkLogo();
+  if (logo) {
+    const w = cv.width * 0.1, h = w * logo.height / logo.width;
+    const ctx = cv.getContext('2d');
+    ctx.globalAlpha = 0.6;
+    ctx.drawImage(logo, cv.width - w - cv.width * 0.03, cv.height - h - cv.width * 0.03, w, h);
+    ctx.globalAlpha = 1;
+  }
+  save(cv, 'community-rangoli.png');
+  btn.disabled = false;
+  btn.textContent = 'Download rangoli';
+});
+
+/* ---------- downloads ---------- */
+
+let previewing = null;           // the rangoli open in the preview card
+
+function save(cv, filename) {
   cv.toBlob(blob => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'community-rangoli.png';
+    a.download = filename;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    btn.disabled = false;
-    btn.textContent = 'Download mandala';
   }, 'image/png');
-});
+}
+
+let logoPromise;
+/** The CM Niagara logo turned light, so it reads as a watermark on the black ground. */
+function watermarkLogo() {
+  logoPromise ||= new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas');
+      cv.width = img.naturalWidth;
+      cv.height = img.naturalHeight;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, cv.width, cv.height);
+      for (let i = 0; i < d.data.length; i += 4) {
+        // black lines become cream, the pale fills fade into the ground
+        const lum = (d.data[i] + d.data[i + 1] + d.data[i + 2]) / 3;
+        d.data[i] = 251; d.data[i + 1] = 247; d.data[i + 2] = 238;
+        d.data[i + 3] = Math.round(d.data[i + 3] * (1 - lum / 255));
+      }
+      ctx.putImageData(d, 0, 0);
+      resolve(cv);
+    };
+    img.onerror = () => resolve(null);
+    img.src = '../logo.png';
+  });
+  return logoPromise;
+}
+
+function wrap(ctx, text, maxWidth) {
+  const lines = [];
+  for (const para of text.split('\n')) {
+    let line = '';
+    for (const word of para.split(/\s+/).filter(Boolean)) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    lines.push(line);
+  }
+  return lines;
+}
+
+/** One person's rangoli as a keepsake: their circle, name and reflection, with the watermark. */
+async function rangoliCard({ img, name, reflection }) {
+  await Promise.all([
+    document.fonts.load("400 64px 'Tiro Devanagari Hindi'"),
+    document.fonts.load("400 34px 'Mukta'"),
+  ]).catch(() => {});
+  const W = 1080, pad = 90, circle = 820;
+  const measure = document.createElement('canvas').getContext('2d');
+  measure.font = "400 34px 'Mukta', sans-serif";
+  const lines = reflection ? wrap(measure, reflection, W - pad * 2) : [];
+  const lineH = 50;
+  const H = pad + circle + 70 + 64 + (lines.length ? 36 + lines.length * lineH : 0) + 190;
+
+  const cv = document.createElement('canvas');
+  cv.width = W;
+  cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#0B0A0A';
+  ctx.fillRect(0, 0, W, H);
+
+  const circleCv = document.createElement('canvas');
+  circleCv.width = circleCv.height = circle;
+  drawCircle(circleCv.getContext('2d'), circle, img);
+  ctx.drawImage(circleCv, (W - circle) / 2, pad);
+
+  let y = pad + circle + 70 + 50;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FBF7EE';
+  ctx.font = "400 64px 'Tiro Devanagari Hindi', Georgia, serif";
+  ctx.fillText(name, W / 2, y);
+  if (lines.length) {
+    y += 36 + 24;
+    ctx.fillStyle = 'rgba(251, 247, 238, .78)';
+    ctx.font = "400 34px 'Mukta', sans-serif";
+    for (const line of lines) {
+      y += lineH;
+      ctx.fillText(line, W / 2, y - 24);
+    }
+  }
+
+  const logo = await watermarkLogo();
+  if (logo) {
+    const w = 120, h = w * logo.height / logo.width;
+    ctx.globalAlpha = 0.6;
+    ctx.drawImage(logo, W - w - 48, H - h - 44, w, h);
+    ctx.globalAlpha = 1;
+  }
+  return cv;
+}
 
 resize();
 updateCount();

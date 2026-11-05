@@ -1,7 +1,7 @@
 /**
  * Shared by the draw, display and admin pages: colours, geometry, the lotus, the API.
  *
- * How the mandala works: each person draws a whole circle, where every stroke repeats in
+ * How the rangoli works: each person draws a whole circle, where every stroke repeats in
  * all 4 quarters. It's cut into those 4 quarters, and each quarter is bent into a slot of a
  * ring, 90° apart. Ring k has 8k slots, so it holds 2k people. People fill a ring at
  * alternating positions, so even a half-full ring stays balanced.
@@ -34,7 +34,7 @@ export const R_LOTUS = 52;
 /* The submitted PNG: R_DRAW maps to half its width. */
 export const EXPORT_PX = 480;
 
-/* The community mandala, in mandala units. */
+/* The community rangoli, in rangoli units (ring radii and widths). */
 export const RING_R0 = 70;
 export const RING_W = 92;
 
@@ -74,7 +74,7 @@ export function personAt(k, slot) {
   return k * (k - 1) + g;
 }
 
-/** Ring and slot under a point given in mandala units from the centre, or null. */
+/** Ring and slot under a point given in rangoli units from the centre, or null. */
 export function slotAtPoint(x, y, rings) {
   const rho = Math.hypot(x, y);
   const k = Math.floor((rho - RING_R0) / RING_W) + 1;
@@ -162,7 +162,7 @@ export const STAMPS = {
   },
 };
 
-/** The fixed lotus at the centre of every circle and of the mandala. */
+/** The fixed lotus at the centre of every circle and of the big rangoli. */
 export function drawLotus(ctx, cx, cy, r) {
   ctx.save();
   ctx.fillStyle = GROUND;
@@ -245,7 +245,7 @@ export const api = {
   index: rev => call('index', { params: rev === undefined ? {} : { rev: String(rev) } }),
   /** The drawings for up to 10 designs, by id. */
   pieces: ids => call('pieces', { params: { ids: ids.join(',') } }),
-  submit: (name, image) => call('submit', { method: 'POST', body: { name, image } }),
+  submit: (name, image, reflection = '') => call('submit', { method: 'POST', body: { name, reflection, image } }),
   check: password => call('check', { method: 'POST', password }),
   reset: password => call('reset', { method: 'POST', password }),
   remove: (password, id) => call('delete', { method: 'POST', password, params: { id } }),

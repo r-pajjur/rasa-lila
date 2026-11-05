@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <title>Community Rangoli</title>
-<meta name="description" content="Draw a small rangoli for the community Diwali mandala." />
+<meta name="description" content="Draw a small rangoli to add to the community Diwali rangoli." />
 <meta name="theme-color" content="#FBF4E4" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -149,6 +149,11 @@
         <input id="name" type="text" maxlength="30" autocomplete="given-name" placeholder="e.g. Asha" />
       </div>
 
+      <div class="name">
+        <label for="reflection">A thought or reflection, if you’d like to share one</label>
+        <textarea id="reflection" maxlength="600" rows="3" placeholder="Anything on your mind as you drew"></textarea>
+      </div>
+
       <p class="error" id="error" role="alert" hidden></p>
       <button type="button" class="btn btn-primary" id="submit">Add my rangoli</button>
     </div>
@@ -160,10 +165,9 @@
       <img id="doneMine" alt="The rangoli you drew" />
       <p id="doneText">Your rangoli was split into four pieces and placed at the highlighted spots below.</p>
     </div>
-    <canvas id="doneMap" role="img" aria-label="Map of the mandala with your 4 pieces marked"></canvas>
+    <canvas id="doneMap" role="img" aria-label="Map of the rangoli with your 4 pieces marked"></canvas>
     <div class="actions">
-      <a class="btn btn-primary" href="display/">See the whole mandala</a>
-      <button type="button" class="btn" id="again">Draw another rangoli</button>
+      <a class="btn btn-primary" href="display/">See the whole rangoli</a>
     </div>
   </section>
 </main>

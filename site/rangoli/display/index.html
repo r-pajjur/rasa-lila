@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="../style.css" />
 <style>
   html, body { height: 100%; background: #0B0A0A; overflow: hidden; }
-  /* grain over the mandala too, so its square never shows against the page */
+  /* grain over the rangoli too, so its square never shows against the page */
   .grain { z-index: 2; }
 
   .screen {
@@ -71,6 +71,7 @@
   }
   .preview-card canvas { width: min(100%, 360px, calc(100vh - 220px)); aspect-ratio: 1; }
   .preview-name { font: 400 30px/1.1 var(--font-display); text-align: center; overflow-wrap: anywhere; }
+  .preview-reflection { margin: -2px 0 2px; max-width: 34ch; font-size: 17px; line-height: 1.5; color: var(--ink-soft); text-align: center; white-space: pre-line; overflow-wrap: anywhere; }
   .preview-actions { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
   .preview-actions .btn { flex: 1; min-height: 50px; font-size: 17px; }
 
@@ -126,7 +127,8 @@
   .count { display: flex; align-items: center; gap: 14px; padding-top: 14px; border-top: var(--border); }
   .count b { font: 400 clamp(48px, 4.6vw, 66px)/.9 var(--font-display); color: var(--magenta); font-variant-numeric: tabular-nums; }
 
-  .save { align-self: flex-start; min-height: 40px; font-size: 15px; }
+  .panel-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .panel-actions .btn { flex: 1 1 140px; min-height: 44px; font-size: 15px; padding: 0 12px; }
 
   @media (max-width: 860px) {
     html, body { overflow: auto; height: auto; }
@@ -144,7 +146,7 @@
 
 <main class="screen">
   <div class="stage">
-    <canvas id="mandala" role="img" aria-label="The community mandala"></canvas>
+    <canvas id="mandala" role="img" aria-label="The community rangoli"></canvas>
     <div class="tip" id="tip" role="tooltip" hidden></div>
     <div class="toast" id="toast" aria-live="polite"><img id="toastImg" alt="" /><span id="toastText"></span></div>
   </div>
@@ -163,7 +165,10 @@
       <b id="count">0</b>
       <span id="countText">Be the first to add a rangoli.</span>
     </div>
-    <button type="button" class="btn save" id="save">Download mandala</button>
+    <div class="panel-actions">
+      <button type="button" class="btn" id="save">Download rangoli</button>
+      <a class="btn" href="../#new">Draw another rangoli</a>
+    </div>
   </aside>
 </main>
 
@@ -171,6 +176,7 @@
   <div class="preview-card" role="dialog" aria-modal="true" aria-labelledby="previewName">
     <canvas id="previewCircle" width="720" height="720" role="img" aria-label="The whole rangoli this person drew"></canvas>
     <div class="preview-name" id="previewName"></div>
+    <p class="preview-reflection" id="previewReflection" hidden></p>
     <div class="preview-actions">
       <button type="button" class="btn btn-primary" id="previewDownload">Download</button>
       <button type="button" class="btn" id="previewClose">Close</button>

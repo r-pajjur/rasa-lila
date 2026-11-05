@@ -382,7 +382,7 @@ $('submit').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Adding…';
   try {
-    const { n } = await api.submit($('name').value.trim(), exportPng());
+    const { n } = await api.submit($('name').value.trim(), exportPng(), $('reflection').value.trim());
     const mine = previewPng();
     try { localStorage.setItem('petal-mandala', JSON.stringify({ n, mine })); } catch (e) {}
     showDone(n, mine);
@@ -441,25 +441,21 @@ function drawMap(cv, place) {
   ctx.fill();
 }
 
-$('again').addEventListener('click', () => {
-  state.strokes = [];
-  state.history = [];
-  $('name').value = '';
-  $('doneView').hidden = true;
-  $('drawView').hidden = false;
-  resize();
-  updateButtons();
-});
-
 /* ---------- start ---------- */
 
 new ResizeObserver(() => resize()).observe(stage);
 resize();
 updateButtons();
 
-// someone who already added one sees their result, with the option to draw another
+// someone who already added one sees their result; "Draw another rangoli" on the display
+// brings them back here with #new for a fresh circle
 try {
-  const saved = JSON.parse(localStorage.getItem('petal-mandala') || 'null');
-  if (saved && saved.n) showDone(saved.n, saved.mine);
+  if (location.hash === '#new') {
+    localStorage.removeItem('petal-mandala');
+    history.replaceState(null, '', location.pathname);
+  } else {
+    const saved = JSON.parse(localStorage.getItem('petal-mandala') || 'null');
+    if (saved && saved.n) showDone(saved.n, saved.mine);
+  }
 } catch (e) {}
 
