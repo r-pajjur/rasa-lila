@@ -79,7 +79,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
-  import { api, loadPieces } from '../shared.js';
+  import { api, loadPieces, rangoliCard } from '../shared.js';
 
   const $ = id => document.getElementById(id);
   let password = '';
@@ -160,17 +160,29 @@
 
   $('zip').addEventListener('click', async () => {
     if (!entries.length || !window.JSZip) return;
+    const btn = $('zip');
+    btn.disabled = true;
     const zip = new JSZip();
-    for (const e of entries) {
-      const safe = (e.name || 'no-name').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
-      zip.file(`${String(e.n).padStart(3, '0')}-${safe}.png`, e.image.split(',')[1], { base64: true });
+    // each file is the same keepsake card as the display's download: rangoli, name, reflection, watermark
+    for (const [k, e] of entries.entries()) {
+      btn.textContent = `Preparing ${k + 1} of ${entries.length}…`;
+      const img = new Image();
+      img.src = e.image;
+      await img.decode();
+      const card = await rangoliCard({ img, name: e.name || 'Anonymous', reflection: e.reflection || '' });
+      const blob = await new Promise(r => card.toBlob(r, 'image/png'));
+      const safe = (e.name || 'anonymous').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'anonymous';
+      zip.file(`${String(e.n).padStart(3, '0')}-${safe}.png`, blob);
     }
+    btn.textContent = 'Zipping…';
     const blob = await zip.generateAsync({ type: 'blob' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'community-rangoli-designs.zip';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    btn.disabled = false;
+    btn.textContent = 'Download all';
   });
 
   let armed = false;

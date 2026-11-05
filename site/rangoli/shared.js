@@ -225,6 +225,103 @@ export function drawKolamDots(ctx, cx, cy, rMin, rMax, scale, alpha) {
   ctx.restore();
 }
 
+/* ---------- downloads: the watermark and the keepsake card ---------- */
+
+let logoPromise;
+/** The CM Niagara logo turned light, so it reads as a watermark on the black ground. */
+export function watermarkLogo() {
+  logoPromise ||= new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas');
+      cv.width = img.naturalWidth;
+      cv.height = img.naturalHeight;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, cv.width, cv.height);
+      for (let i = 0; i < d.data.length; i += 4) {
+        // black lines become cream, the pale fills fade into the ground
+        const lum = (d.data[i] + d.data[i + 1] + d.data[i + 2]) / 3;
+        d.data[i] = 251; d.data[i + 1] = 247; d.data[i + 2] = 238;
+        d.data[i + 3] = Math.round(d.data[i + 3] * (1 - lum / 255));
+      }
+      ctx.putImageData(d, 0, 0);
+      resolve(cv);
+    };
+    img.onerror = () => resolve(null);
+    img.src = new URL('./logo.png', import.meta.url).href;
+  });
+  return logoPromise;
+}
+
+function wrap(ctx, text, maxWidth) {
+  const lines = [];
+  for (const para of text.split('\n')) {
+    let line = '';
+    for (const word of para.split(/\s+/).filter(Boolean)) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    lines.push(line);
+  }
+  return lines;
+}
+
+/** One person's rangoli as a keepsake: their circle, name and reflection, with the watermark. */
+export async function rangoliCard({ img, name, reflection }) {
+  await Promise.all([
+    document.fonts.load("400 64px 'Tiro Devanagari Hindi'"),
+    document.fonts.load("400 34px 'Mukta'"),
+  ]).catch(() => {});
+  const W = 1080, pad = 90, circle = 820;
+  const measure = document.createElement('canvas').getContext('2d');
+  measure.font = "400 34px 'Mukta', sans-serif";
+  const lines = reflection ? wrap(measure, reflection, W - pad * 2) : [];
+  const lineH = 50;
+  const H = pad + circle + 70 + 64 + (lines.length ? 36 + lines.length * lineH : 0) + 190;
+
+  const cv = document.createElement('canvas');
+  cv.width = W;
+  cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#0B0A0A';
+  ctx.fillRect(0, 0, W, H);
+
+  const circleCv = document.createElement('canvas');
+  circleCv.width = circleCv.height = circle;
+  drawCircle(circleCv.getContext('2d'), circle, img);
+  ctx.drawImage(circleCv, (W - circle) / 2, pad);
+
+  let y = pad + circle + 70 + 50;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FBF7EE';
+  ctx.font = "400 64px 'Tiro Devanagari Hindi', Georgia, serif";
+  ctx.fillText(name, W / 2, y);
+  if (lines.length) {
+    y += 36 + 24;
+    ctx.fillStyle = 'rgba(251, 247, 238, .78)';
+    ctx.font = "400 34px 'Mukta', sans-serif";
+    for (const line of lines) {
+      y += lineH;
+      ctx.fillText(line, W / 2, y - 24);
+    }
+  }
+
+  const logo = await watermarkLogo();
+  if (logo) {
+    const w = 120, h = w * logo.height / logo.width;
+    ctx.globalAlpha = 0.6;
+    ctx.drawImage(logo, W - w - 48, H - h - 44, w, h);
+    ctx.globalAlpha = 1;
+  }
+  return cv;
+}
+
 /* ---------- the API ---------- */
 
 const API = '/api/rangoli/';
