@@ -97,8 +97,6 @@
   .share-link-row { display: flex; gap: 8px; }
   .share-link-row input { flex: 1; min-width: 0; height: 46px; font-size: 16px; }
   .share-link-row .btn { min-height: 46px; margin-right: 4px; font-size: 16px; flex: none; }
-  .share-insta { margin: 0; font-size: 15px; color: var(--ink-soft); }
-  .linkish { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .share-card > .btn { align-self: flex-end; min-height: 44px; }
 
   .toast {
@@ -125,39 +123,43 @@
   .toast img { width: 40px; height: 40px; }
   .toast b { font: 400 1.15em var(--font-display); }
 
+  /* sizes follow the screen's height as well as its width, so the panel never needs scrolling */
   .panel {
     position: relative;
-    flex: 0 1 400px;
+    flex: 0 1 360px;
     min-width: 0;
     margin-right: 6px;
     display: flex;
     flex-direction: column;
-    gap: clamp(10px, 1.8vh, 18px);
-    padding: clamp(18px, 2.6vh, 28px) 26px;
+    gap: clamp(8px, 1.5vh, 14px);
+    padding: clamp(14px, 2.2vh, 22px) 22px;
     background: var(--paper);
     color: var(--ink);
     border: var(--border);
     border-radius: var(--radius);
     box-shadow: 6px 6px 0 var(--marigold);
-      max-height: calc(100vh - 32px);
+    max-height: calc(100vh - 32px);
     overflow-y: auto;
   }
-  .panel-logo { align-self: center; width: clamp(72px, 6.5vw, 100px); height: auto; }
+  .panel-logo { align-self: center; width: min(84px, 10vh); height: auto; }
   .eyebrow { font-size: 14px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--kumkum); }
-  .panel h1 { margin: 0; font: 400 clamp(34px, 3.3vw, 48px)/1 var(--font-display); }
-  .panel p { margin: 0; font-size: clamp(16px, 1.3vw, 19px); color: var(--ink-soft); }
+  .panel h1 { margin: 0; font: 400 min(40px, 3vw, 5.4vh)/1 var(--font-display); }
+  .panel p { margin: 0; font-size: min(17px, 1.2vw, 2.3vh); line-height: 1.4; color: var(--ink-soft); }
+  .panel .strip { height: 12px; }
 
-  .join { display: flex; gap: 18px; align-items: center; }
-  .qr { flex: none; width: clamp(110px, 10vw, 150px); aspect-ratio: 1; background: #fff; border: var(--border); border-radius: var(--radius); padding: 6px; }
+  .join { display: flex; gap: 14px; align-items: center; }
+  .qr { flex: none; width: min(120px, 8.5vw, 16vh); aspect-ratio: 1; background: #fff; border: var(--border); border-radius: var(--radius); padding: 5px; }
   .qr svg { width: 100%; height: 100%; display: block; }
-  .url { margin-top: -6px; font-size: clamp(18px, 1.6vw, 24px); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .join p { font-size: min(15px, 2.1vh) !important; }
+  .url { margin-top: -4px; font-size: min(20px, 1.4vw, 2.8vh); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .count { display: flex; align-items: center; gap: 14px; padding-top: 14px; border-top: var(--border); }
-  .count b { font: 400 clamp(48px, 4.6vw, 66px)/.9 var(--font-display); color: var(--magenta); font-variant-numeric: tabular-nums; }
+  .count { display: flex; align-items: center; gap: 12px; padding-top: min(12px, 1.6vh); border-top: var(--border); font-size: min(17px, 2.3vh); }
+  .count b { font: 400 min(54px, 4vw, 7vh)/.9 var(--font-display); color: var(--magenta); font-variant-numeric: tabular-nums; }
 
   .panel > * { flex-shrink: 0; }
-  .panel-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-  .panel-actions .btn { flex: 1 1 140px; min-height: 44px; font-size: 15px; padding: 0 12px; }
+  .panel-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .panel-actions .btn { flex: 1 1 120px; min-height: min(42px, 5.6vh); font-size: 15px; padding: 0 10px; }
+  .panel-actions .btn:first-child { flex-basis: 100%; }
 
   @media (max-width: 860px) {
     html, body { overflow: auto; height: auto; }
@@ -195,9 +197,9 @@
       <span id="countText">Be the first to add a rangoli.</span>
     </div>
     <div class="panel-actions">
+      <a class="btn" href="../#new">Draw another rangoli</a>
       <button type="button" class="btn" id="save">Download rangoli</button>
       <button type="button" class="btn" id="share">Share</button>
-      <a class="btn" href="../#new">Draw another rangoli</a>
     </div>
   </aside>
 </main>
@@ -239,7 +241,6 @@
         <button type="button" class="btn btn-primary" id="shareCopy">Copy link</button>
       </div>
     </div>
-    <p class="share-insta">Posting on Instagram? <button type="button" class="linkish" id="shareDownload">Download the image</button> and tag @cmniagara.</p>
     <button type="button" class="btn" id="shareClose">Close</button>
   </div>
 </div>

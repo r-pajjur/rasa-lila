@@ -270,22 +270,20 @@ async function share(btn, label, blobPromise, filename) {
     }
     return;
   }
-  openShareDialog(blob, filename, btn);
+  openShareDialog(btn);
 }
 
 /* ---------- the share window (computers without a share menu) ---------- */
 
 const shareDialog = $('shareDialog');
 let shareReturn = null;
-let shareImage = null;          // { blob, filename } for "Download the image"
 
 $('shareUrl').value = displayUrl;
 $('shareWhatsapp').href = `https://wa.me/?text=${encodeURIComponent(`${SHARE_TEXT} ${displayUrl}`)}`;
 $('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(displayUrl)}`;
 $('shareEmail').href = `mailto:?subject=${encodeURIComponent('Our Community Rangoli')}&body=${encodeURIComponent(`${SHARE_TEXT}:\n${displayUrl}`)}`;
 
-function openShareDialog(blob, filename, opener) {
-  shareImage = { blob, filename };
+function openShareDialog(opener) {
   shareReturn = opener;
   $('shareCopy').textContent = 'Copy link';
   shareDialog.hidden = false;
@@ -309,15 +307,6 @@ $('shareCopy').addEventListener('click', async () => {
   }
   $('shareCopy').textContent = 'Copied!';
   setTimeout(() => { $('shareCopy').textContent = 'Copy link'; }, 2200);
-});
-
-$('shareDownload').addEventListener('click', () => {
-  if (!shareImage) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(shareImage.blob);
-  a.download = shareImage.filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 });
 
 $('shareClose').addEventListener('click', closeShareDialog);
