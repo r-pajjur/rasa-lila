@@ -166,7 +166,17 @@
     html, body { overflow: auto; height: auto; }
     .screen { flex-direction: column; height: auto; }
     .stage { width: min(100%, 640px); }
-    .panel { flex: none; width: min(100%, 640px); }
+    /* phones scroll, so the panel uses normal, readable sizes instead of shrinking to fit */
+    .panel { flex: none; width: min(100%, 640px); max-height: none; overflow: visible; gap: 14px; padding: 22px; }
+    .panel-logo { width: 84px; }
+    .panel h1 { font-size: 40px; }
+    .panel p { font-size: 17px; }
+    .qr { width: 130px; }
+    .join p { font-size: 15px !important; }
+    .url { font-size: 20px; }
+    .count { font-size: 17px; padding-top: 12px; }
+    .count b { font-size: 54px; }
+    .panel-actions .btn { min-height: 46px; }
   }
 </style>
 </head>
