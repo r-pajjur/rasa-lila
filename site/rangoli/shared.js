@@ -312,14 +312,70 @@ export async function rangoliCard({ img, name, reflection }) {
     }
   }
 
+  await stampBrand(cv);
+  return cv;
+}
+
+export const SOCIAL_HANDLE = '@cmniagara';
+export const SOCIAL_LINKS = {
+  instagram: 'https://www.instagram.com/cmniagara/',
+  facebook: 'https://www.facebook.com/cmniagara/',
+};
+
+/** Small Instagram and Facebook marks, drawn in cream, `s` px tall, from the top-left (x, y). */
+export function drawSocialIcons(ctx, x, y, s) {
+  ctx.save();
+  ctx.strokeStyle = ctx.fillStyle = '#FBF7EE';
+  // Instagram: a rounded square, a lens and a dot
+  ctx.lineWidth = s * 0.09;
+  const r = s * 0.28, i = ctx.lineWidth / 2;
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i, s - 2 * i, s - 2 * i, r);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + s / 2, y + s / 2, s * 0.22, 0, TAU);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + s * 0.76, y + s * 0.24, s * 0.06, 0, TAU);
+  ctx.fill();
+  // Facebook: a filled rounded square with the f cut out
+  const fx = x + s * 1.35;
+  ctx.beginPath();
+  ctx.roundRect(fx, y, s, s, s * 0.22);
+  ctx.fill();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.font = `700 ${s * 0.95}px 'Mukta', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('f', fx + s * 0.58, y + s * 1.02);
+  ctx.restore();
+  return fx + s;
+}
+
+/** The CM Niagara logo bottom-right and the social handles bottom-left, scaled to the image. */
+export async function stampBrand(cv) {
+  const ctx = cv.getContext('2d');
+  const u = cv.width / 1080;
   const logo = await watermarkLogo();
+  let logoH = 110 * u;
   if (logo) {
-    const w = 120, h = w * logo.height / logo.width;
+    const w = 115 * u, h = w * logo.height / logo.width;
+    logoH = h;
     ctx.globalAlpha = 0.6;
-    ctx.drawImage(logo, W - w - 48, H - h - 44, w, h);
+    ctx.drawImage(logo, cv.width - w - 46 * u, cv.height - h - 44 * u, w, h);
     ctx.globalAlpha = 1;
   }
-  return cv;
+  await document.fonts.load(`600 ${28 * u}px 'Mukta'`).catch(() => {});
+  const s = 30 * u;
+  const y = cv.height - 44 * u - logoH / 2 - s / 2;
+  ctx.globalAlpha = 0.7;
+  const end = drawSocialIcons(ctx, 46 * u, y, s);
+  ctx.fillStyle = '#FBF7EE';
+  ctx.font = `600 ${28 * u}px 'Mukta', sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(SOCIAL_HANDLE, end + 14 * u, y + s / 2 + 1 * u);
+  ctx.globalAlpha = 1;
 }
 
 /* ---------- the API ---------- */

@@ -1,4 +1,4 @@
-import { api, loadPieces, drawCircle, watermarkLogo, rangoliCard } from '../shared.js';
+import { api, loadPieces, drawCircle, rangoliCard, stampBrand, SOCIAL_HANDLE, SOCIAL_LINKS } from '../shared.js';
 import { Mandala, decode } from '../mandala.js';
 
 const $ = id => document.getElementById(id);
@@ -188,6 +188,9 @@ canvas.addEventListener('click', e => {
     $('previewReflection').textContent = entry.reflection || '';
     $('previewReflection').hidden = !entry.reflection;
     previewing = { img, name: who.name || 'Anonymous', reflection: entry.reflection || '' };
+    previewing.blob = rangoliCard(previewing).then(toBlob);
+    $('previewShareMenu').hidden = true;
+    $('previewShare').textContent = 'Share';
     lastFocus = document.activeElement;
     preview.hidden = false;
     $('previewClose').focus();
@@ -213,27 +216,91 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview
 
 /* ---------- export ---------- */
 
-$('save').addEventListener('click', async () => {
-  const btn = $('save');
-  btn.disabled = true;
-  btn.textContent = 'Preparing image…';
-  await new Promise(r => setTimeout(r, 30));
+/** The big rangoli at full size, with the logo and handles. */
+async function bigRangoli() {
   const cv = document.createElement('canvas');
   cv.width = cv.height = 3000;
   const big = new Mandala(cv);
   big.people = mandala.people.slice();
   big.rebuild();
-  const logo = await watermarkLogo();
-  if (logo) {
-    const w = cv.width * 0.1, h = w * logo.height / logo.width;
-    const ctx = cv.getContext('2d');
-    ctx.globalAlpha = 0.6;
-    ctx.drawImage(logo, cv.width - w - cv.width * 0.03, cv.height - h - cv.width * 0.03, w, h);
-    ctx.globalAlpha = 1;
-  }
-  save(cv, 'community-rangoli.png');
+  await stampBrand(cv);
+  return cv;
+}
+
+$('save').addEventListener('click', async () => {
+  const btn = $('save');
+  btn.disabled = true;
+  btn.textContent = 'Preparing image…';
+  await new Promise(r => setTimeout(r, 30));
+  save(await bigRangoli(), 'community-rangoli.png');
   btn.disabled = false;
   btn.textContent = 'Download rangoli';
+});
+
+/* ---------- sharing ---------- */
+
+const SHARE_TEXT = `Our Community Rangoli this Diwali, drawn together with ${SOCIAL_HANDLE}`;
+const displayUrl = new URL('./', location.href).href;
+const toBlob = cv => new Promise(r => cv.toBlob(r, 'image/png'));
+
+// the big image takes a moment to build, so start as soon as a finger or mouse goes down
+let bigShare = null;              // { rev, blob: Promise<Blob> }
+function prepareBigShare() {
+  if (!bigShare || bigShare.rev !== rev) bigShare = { rev, blob: bigRangoli().then(toBlob) };
+  return bigShare.blob;
+}
+$('share').addEventListener('pointerdown', prepareBigShare);
+
+/**
+ * Phones (and Safari) open their own share menu with the image attached, where Instagram,
+ * Facebook, WhatsApp and the rest appear. Elsewhere, show a small Facebook / Instagram menu.
+ */
+async function share(btn, label, blobPromise, filename, menu) {
+  btn.disabled = true;
+  btn.textContent = 'Preparing…';
+  const blob = await blobPromise;
+  btn.disabled = false;
+  btn.textContent = label;
+  const file = new File([blob], filename, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Community Rangoli', text: SHARE_TEXT });
+    } catch (err) {
+      // the browser wanted a fresh tap after the wait; the image is ready now
+      if (err.name === 'NotAllowedError') btn.textContent = 'Tap again to share';
+    }
+    return;
+  }
+  openMenu(menu, blob, filename);
+}
+
+function openMenu(menu, blob, filename) {
+  menu.hidden = !menu.hidden;
+  if (!menu.hidden) menu.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  const fb = menu.querySelector('[data-share="facebook"]');
+  fb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(displayUrl)}`;
+  // Instagram can't take posts from another website, so save the image and open Instagram to post it
+  menu.querySelector('[data-share="instagram"]').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    window.open(SOCIAL_LINKS.instagram, '_blank', 'noopener');
+  };
+}
+
+$('share').addEventListener('click', () => {
+  const btn = $('share');
+  btn.textContent = 'Share';
+  share(btn, 'Share', prepareBigShare(), 'community-rangoli.png', $('shareMenu'));
+});
+
+$('previewShare').addEventListener('click', () => {
+  if (!previewing) return;
+  const slug = previewing.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'anonymous';
+  $('previewShare').textContent = 'Share';
+  share($('previewShare'), 'Share', previewing.blob, `rangoli-${slug}.png`, $('previewShareMenu'));
 });
 
 /* ---------- downloads ---------- */
