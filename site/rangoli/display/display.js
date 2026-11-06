@@ -189,7 +189,6 @@ canvas.addEventListener('click', e => {
     $('previewReflection').hidden = !entry.reflection;
     previewing = { img, name: who.name || 'Anonymous', reflection: entry.reflection || '' };
     previewing.blob = rangoliCard(previewing).then(toBlob);
-    $('previewShareMenu').hidden = true;
     $('previewShare').textContent = 'Share';
     lastFocus = document.activeElement;
     preview.hidden = false;
@@ -212,7 +211,7 @@ $('previewDownload').addEventListener('click', async () => {
   save(cv, `rangoli-${slug}.png`);
 });
 preview.addEventListener('click', e => { if (e.target === preview) closePreview(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !closeShareDialog()) closePreview(); });
 
 /* ---------- export ---------- */
 
@@ -253,9 +252,9 @@ $('share').addEventListener('pointerdown', prepareBigShare);
 
 /**
  * Phones (and Safari) open their own share menu with the image attached, where Instagram,
- * Facebook, WhatsApp and the rest appear. Elsewhere, show a small Facebook / Instagram menu.
+ * Facebook, WhatsApp and the rest appear. Other computers get the share window below.
  */
-async function share(btn, label, blobPromise, filename, menu) {
+async function share(btn, label, blobPromise, filename) {
   btn.disabled = true;
   btn.textContent = 'Preparing…';
   const blob = await blobPromise;
@@ -271,36 +270,70 @@ async function share(btn, label, blobPromise, filename, menu) {
     }
     return;
   }
-  openMenu(menu, blob, filename);
+  openShareDialog(blob, filename, btn);
 }
 
-function openMenu(menu, blob, filename) {
-  menu.hidden = !menu.hidden;
-  if (!menu.hidden) menu.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  const fb = menu.querySelector('[data-share="facebook"]');
-  fb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(displayUrl)}`;
-  // Instagram can't take posts from another website, so save the image and open Instagram to post it
-  menu.querySelector('[data-share="instagram"]').onclick = () => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    window.open(SOCIAL_LINKS.instagram, '_blank', 'noopener');
-  };
+/* ---------- the share window (computers without a share menu) ---------- */
+
+const shareDialog = $('shareDialog');
+let shareReturn = null;
+let shareImage = null;          // { blob, filename } for "Download the image"
+
+$('shareUrl').value = displayUrl;
+$('shareWhatsapp').href = `https://wa.me/?text=${encodeURIComponent(`${SHARE_TEXT} ${displayUrl}`)}`;
+$('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(displayUrl)}`;
+$('shareEmail').href = `mailto:?subject=${encodeURIComponent('Our Community Rangoli')}&body=${encodeURIComponent(`${SHARE_TEXT}:\n${displayUrl}`)}`;
+
+function openShareDialog(blob, filename, opener) {
+  shareImage = { blob, filename };
+  shareReturn = opener;
+  $('shareCopy').textContent = 'Copy link';
+  shareDialog.hidden = false;
+  $('shareCopy').focus();
 }
+
+function closeShareDialog() {
+  if (shareDialog.hidden) return false;
+  shareDialog.hidden = true;
+  shareReturn?.focus?.();
+  return true;
+}
+
+$('shareCopy').addEventListener('click', async () => {
+  const input = $('shareUrl');
+  try {
+    await navigator.clipboard.writeText(input.value);
+  } catch (err) {
+    input.select();
+    document.execCommand('copy');
+  }
+  $('shareCopy').textContent = 'Copied!';
+  setTimeout(() => { $('shareCopy').textContent = 'Copy link'; }, 2200);
+});
+
+$('shareDownload').addEventListener('click', () => {
+  if (!shareImage) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(shareImage.blob);
+  a.download = shareImage.filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+$('shareClose').addEventListener('click', closeShareDialog);
+shareDialog.addEventListener('click', e => { if (e.target === shareDialog) closeShareDialog(); });
 
 $('share').addEventListener('click', () => {
   const btn = $('share');
   btn.textContent = 'Share';
-  share(btn, 'Share', prepareBigShare(), 'community-rangoli.png', $('shareMenu'));
+  share(btn, 'Share', prepareBigShare(), 'community-rangoli.png');
 });
 
 $('previewShare').addEventListener('click', () => {
   if (!previewing) return;
   const slug = previewing.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'anonymous';
   $('previewShare').textContent = 'Share';
-  share($('previewShare'), 'Share', previewing.blob, `rangoli-${slug}.png`, $('previewShareMenu'));
+  share($('previewShare'), 'Share', previewing.blob, `rangoli-${slug}.png`);
 });
 
 /* ---------- downloads ---------- */
