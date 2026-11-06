@@ -239,6 +239,8 @@ $('save').addEventListener('click', async () => {
 /* ---------- sharing ---------- */
 
 const SHARE_TEXT = `Our Community Rangoli this Diwali, drawn together with ${SOCIAL_HANDLE}`;
+// the rangoli link goes first in each message, since WhatsApp builds its preview from the first link
+const FOLLOW_TEXT = `Follow ${SOCIAL_HANDLE}:\nInstagram: ${SOCIAL_LINKS.instagram}\nFacebook: ${SOCIAL_LINKS.facebook}`;
 const displayUrl = new URL('./', location.href).href;
 const toBlob = cv => new Promise(r => cv.toBlob(r, 'image/png'));
 
@@ -263,7 +265,7 @@ async function share(btn, label, blobPromise, filename) {
   const file = new File([blob], filename, { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Community Rangoli', text: SHARE_TEXT });
+      await navigator.share({ files: [file], title: 'Community Rangoli', text: `${SHARE_TEXT}\n\n${FOLLOW_TEXT}` });
     } catch (err) {
       // the browser wanted a fresh tap after the wait; the image is ready now
       if (err.name === 'NotAllowedError') btn.textContent = 'Tap again to share';
@@ -279,9 +281,9 @@ const shareDialog = $('shareDialog');
 let shareReturn = null;
 
 $('shareUrl').value = displayUrl;
-$('shareWhatsapp').href = `https://wa.me/?text=${encodeURIComponent(`${SHARE_TEXT} ${displayUrl}`)}`;
+$('shareWhatsapp').href = `https://wa.me/?text=${encodeURIComponent(`${SHARE_TEXT}\n${displayUrl}\n\n${FOLLOW_TEXT}`)}`;
 $('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(displayUrl)}`;
-$('shareEmail').href = `mailto:?subject=${encodeURIComponent('Our Community Rangoli')}&body=${encodeURIComponent(`${SHARE_TEXT}:\n${displayUrl}`)}`;
+$('shareEmail').href = `mailto:?subject=${encodeURIComponent('Our Community Rangoli')}&body=${encodeURIComponent(`${SHARE_TEXT}:\n${displayUrl}\n\n${FOLLOW_TEXT}`)}`;
 
 function openShareDialog(opener) {
   shareReturn = opener;
