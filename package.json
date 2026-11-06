@@ -8,5 +8,8 @@
     "build": "npm --prefix wayfinder run build && node scripts/build.mjs",
     "start": "npm --prefix wayfinder start",
     "postinstall": "npm --prefix wayfinder install"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "1.0.11"
   }
 }

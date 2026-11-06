@@ -5,11 +5,13 @@
  *   POST /api/rangoli/?action=submit            { name, reflection, image }  -> { n }
  *   POST /api/rangoli/?action=check|reset       X-Admin-Password header
  *   POST /api/rangoli/?action=delete&id=ID      X-Admin-Password header
+ *   GET  /api/rangoli/?action=preview           the link-preview image, showing the rangoli as it is now
  * A design's place in the rangoli is its position in arrival order, so deleting one moves
  * everyone after it down a place and the rangoli stays packed from the centre out.
  * Every key expires two weeks after the last change, so nothing outlives the event.
  */
 import { randomUUID } from 'node:crypto';
+import { renderPreview } from './_rangoli-preview.js';
 
 const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -20,6 +22,7 @@ const ORDER = 'rangoli:order';          // sorted set: design id, scored by arri
 const META = 'rangoli:meta';            // hash id -> { id, name, reflection, at }
 const IMG = 'rangoli:img:';             // + id -> PNG data URL
 const REV = 'rangoli:rev';              // bumps on every change, so the display can skip unchanged polls
+const PREVIEW = 'rangoli:preview';      // { rev, jpg } — the last link-preview image and the change it shows
 const TTL = 60 * 60 * 24 * 14;
 const BATCH = 10;                       // keeps each response well under Vercel's size limit
 const MAX_IMAGE = 900_000;              // a 480px PNG data URL is usually 30–250 KB
@@ -122,6 +125,30 @@ export default async function handler(req, res) {
         return;
       }
       res.status(200).json({ rev, items: await orderedItems() });
+      return;
+    }
+
+    if (action === 'preview' && req.method === 'GET') {
+      // drawn once per change and kept, so WhatsApp and Facebook get it straight away
+      const rev = String((await redis(['GET', REV])) ?? '0');
+      let jpg = null;
+      try {
+        const saved = JSON.parse((await redis(['GET', PREVIEW])) || 'null');
+        if (saved && saved.rev === rev) jpg = Buffer.from(saved.jpg, 'base64');
+      } catch (e) {}
+      if (!jpg) {
+        const ids = (await redis(['ZRANGE', ORDER, '0', '-1'])) || [];
+        const images = [];
+        for (let k = 0; k < ids.length; k += 20) {
+          const batch = await redis(['MGET', ...ids.slice(k, k + 20).map(id => IMG + id)]);
+          for (const image of batch) if (image) images.push(image);
+        }
+        jpg = await renderPreview(images);
+        await redis(['SET', PREVIEW, JSON.stringify({ rev, jpg: jpg.toString('base64') }), 'EX', String(TTL)]);
+      }
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
+      res.status(200).send(jpg);
       return;
     }
 

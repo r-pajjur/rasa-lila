@@ -3,5 +3,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "trailingSlash": true
+  "trailingSlash": true,
+  "functions": {
+    "api/rangoli.js": {
+      "includeFiles": "site/rangoli/{mandala.js,shared.js,og-base.png}"
+    }
+  }
 }
