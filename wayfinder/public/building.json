@@ -74,14 +74,6 @@
     "mandir-corridor": {
       "label": "Corridor outside the Mandir"
     },
-    "library": {
-      "label": "Library",
-      "destination": true
-    },
-    "mandir": {
-      "label": "Mandir",
-      "destination": true
-    },
     "basement-stairs-door": {
       "label": "Doorway to the Basement Stairs"
     },
@@ -138,6 +130,17 @@
       "label": "East Wing 2nd Floor Extension",
       "destination": true,
       "rooms": { "from": 244, "to": 247 }
+    },
+    "past-mandir": {
+      "label": "Hallway past the Mandir"
+    },
+    "library": {
+      "label": "Library",
+      "destination": true
+    },
+    "mandir": {
+      "label": "Mandir",
+      "destination": true
     }
   },
   "steps": [
@@ -303,7 +306,7 @@
       "from": "marble-hall-end",
       "to": "mandir-corridor",
       "photo": "dhToM/dhToM2.jpg",
-      "arrow": "straight",
+      "arrow": "turn-right",
       "text": "Go through the double doors, down the steps, and turn right."
     },
     {
@@ -447,7 +450,7 @@
       "text": "Rooms 44 and 51 are along this hallway — check the numbers on the doors."
     },
     {
-      "from": "mandir-corridor",
+      "from": "past-mandir",
       "to": "east-1-door",
       "photo": "mToE1/mToE11.jpg",
       "arrow": "straight",
@@ -523,6 +526,21 @@
       "photo": "dhToE2/dhToE23.jpg",
       "arrow": "straight",
       "text": "Go through the wooden door ahead, next to the whiteboard."
+    },
+    {
+      "from": "mandir-corridor",
+      "to": "past-mandir",
+      "photo": "dhToM/dhToM3.jpg",
+      "arrow": "straight",
+      "arrowTilt": 30,
+      "text": "Continue down this hall, past the mandir."
+    },
+    {
+      "from": "mandir",
+      "to": "past-mandir",
+      "photo": "mToDh/mandirDoor.jpg",
+      "arrow": "turn-left",
+      "text": "Start at the mandir’s glass doors and turn left."
     }
   ],
   "overrides": [
@@ -530,12 +548,6 @@
       "photo": "meToDh/mainEntrance.jpg",
       "before": "dhToM/dhToM1.jpg",
       "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
-      "arrow": "turn-left"
-    },
-    {
-      "photo": "mToDh/mandirDoor.jpg",
-      "before": "mToE1/mToE11.jpg",
-      "text": "Start at the mandir’s glass doors and turn left.",
       "arrow": "turn-left"
     },
     {
