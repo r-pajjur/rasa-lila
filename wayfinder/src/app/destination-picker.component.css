@@ -1,8 +1,8 @@
 h2 {
   margin: 0 0 14px;
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Tiro Devanagari Hindi', Georgia, serif;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--ochre);
 }
 
@@ -70,9 +70,9 @@ h2 {
 }
 
 .name {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Tiro Devanagari Hindi', Georgia, serif;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--ochre);
 }
 
@@ -103,7 +103,7 @@ h2 {
   min-height: 44px;
   padding: 0;
   margin-bottom: 6px;
-  font: 600 16px 'Inter', sans-serif;
+  font: 600 16px 'Mukta', sans-serif;
   color: var(--ochre);
   background: none;
   border: 0;
@@ -123,9 +123,9 @@ h2 {
 }
 
 .room-field {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Tiro Devanagari Hindi', Georgia, serif;
   font-size: 30px;
-  font-weight: 600;
+  font-weight: 400;
   text-align: center;
 }
 

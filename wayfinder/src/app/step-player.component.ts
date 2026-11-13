@@ -3,8 +3,8 @@ import { BuildingStep } from './building.model';
 import { ArrowOverlayComponent } from './arrow-overlay.component';
 
 /**
- * Plays a route one leg at a time: photo, arrow, instruction, Next.
- * It is handed a finished route and reports nothing back but "done".
+ * Plays a route one leg at a time: instruction, photo with its arrow, Next.
+ * Laid out to fit one phone screen, so nobody scrolls mid-walk.
  */
 @Component({
   selector: 'app-step-player',
@@ -18,16 +18,22 @@ import { ArrowOverlayComponent } from './arrow-overlay.component';
         <span class="counter">Step {{ index() + 1 }} of {{ steps.length }}</span>
       </div>
 
+      <div class="instruction" aria-live="polite">
+        <span class="num" aria-hidden="true">{{ index() + 1 }}</span>
+        <div class="words">
+          <p>{{ current().text }}</p>
+          @if (arrived()) {
+            <p class="arrived">You have arrived at {{ destinationLabel }}.</p>
+          }
+        </div>
+      </div>
+
       <figure class="shot">
-        <img [src]="photoBase + current().photo" [alt]="current().text" />
-        <app-arrow-overlay [direction]="current().arrow" />
+        <div class="frame">
+          <img [src]="photoBase + current().photo" [alt]="current().text" />
+          <app-arrow-overlay [direction]="current().arrow" [at]="current().arrowAt" [tilt]="current().arrowTilt ?? 0" />
+        </div>
       </figure>
-
-      <p class="instruction">{{ current().text }}</p>
-
-      @if (arrived()) {
-        <p class="arrived">You have arrived at {{ destinationLabel }}.</p>
-      }
 
       <div class="controls">
         <button class="btn quiet" type="button" [disabled]="index() === 0" (click)="back()">Previous step</button>

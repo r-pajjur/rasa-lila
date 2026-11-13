@@ -1,40 +1,55 @@
 .shell {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   max-width: 560px;
+  min-height: 100dvh;
   margin: 0 auto;
   padding:
-    calc(env(safe-area-inset-top, 0px) + 22px)
-    calc(env(safe-area-inset-right, 0px) + 20px)
-    calc(env(safe-area-inset-bottom, 0px) + 28px)
-    calc(env(safe-area-inset-left, 0px) + 20px);
+    calc(env(safe-area-inset-top, 0px) + 14px)
+    calc(env(safe-area-inset-right, 0px) + 16px)
+    calc(env(safe-area-inset-bottom, 0px) + 10px)
+    calc(env(safe-area-inset-left, 0px) + 16px);
 }
 
-.bar {
-  text-align: center;
+/* on a route, exactly one screen tall so the directions never need scrolling */
+.shell.on-trip {
+  height: 100dvh;
+  min-height: 0;
+  gap: 10px;
+  overflow: hidden;
 }
 
-.eyebrow {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--saffron);
+/* logo, app name and where you started, quietly at the bottom */
+.brand {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hairline);
 }
 
-.bar h1 {
-  margin: 2px 0 0;
-  font-family: 'Fraunces', Georgia, serif;
-  font-size: 30px;
-  font-weight: 600;
+.brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-name {
+  font: 400 17px/1.1 'Tiro Devanagari Hindi', Georgia, serif;
   color: var(--ochre);
 }
 
 .here {
-  margin: 8px 0 0;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--ink-soft);
 }
 
@@ -48,7 +63,7 @@
   min-height: 44px;
   margin: -10px 0 4px -4px;
   padding: 0 4px;
-  font: 600 16px 'Inter', sans-serif;
+  font: 600 16px 'Mukta', sans-serif;
   color: var(--ochre);
   background: none;
   border: 0;
@@ -86,9 +101,9 @@
 
 .card h2 {
   margin: 0 0 8px;
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Tiro Devanagari Hindi', Georgia, serif;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--ochre);
 }
 
@@ -110,7 +125,7 @@
 .anchors button {
   min-height: 44px;
   padding: 9px 15px;
-  font: 600 15px 'Inter', sans-serif;
+  font: 600 15px 'Mukta', sans-serif;
   color: var(--ochre);
   background: var(--chandan);
   border: 1px solid var(--hairline);

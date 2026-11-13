@@ -1,11 +1,4 @@
-<main class="shell">
-  <header class="bar">
-    <span class="eyebrow">Life Gurukula</span>
-    <h1>Find your way</h1>
-    @if (knownAnchor()) {
-      <p class="here">You are at <b>{{ here() }}</b></p>
-    }
-  </header>
+<main class="shell" [class.on-trip]="!!trip()">
 
   @if (error()) {
     <div class="card warn">
@@ -56,4 +49,16 @@
       </div>
     }
   }
+
+  <footer class="brand">
+    <img src="lg-logo.png" alt="Life Gurukula" width="36" height="36" />
+    <div class="brand-text">
+      <span class="brand-name">Find your way</span>
+      @if (knownAnchor()) {
+        <span class="here">Starting at <b>{{ here() }}</b></span>
+      } @else {
+        <span class="here">Life Gurukula</span>
+      }
+    </div>
+  </footer>
 </main>

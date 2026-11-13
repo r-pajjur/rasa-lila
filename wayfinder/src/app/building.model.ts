@@ -1,5 +1,8 @@
-/** Directions an arrow overlay can point. */
-export type ArrowDirection = 'left' | 'right' | 'straight' | 'up' | 'down';
+/** Directions an arrow overlay can point. "turn-*" is a bent arrow; "none" shows no arrow. */
+export type ArrowDirection = 'left' | 'right' | 'straight' | 'up' | 'down' | 'turn-left' | 'turn-right' | 'none';
+
+/** Where on the photo the arrow sits. */
+export type ArrowPosition = 'center' | 'left' | 'right' | 'bottom';
 
 /** A range of room numbers that all sit behind one anchor. */
 export interface RoomRange {
@@ -24,6 +27,10 @@ export interface BuildingStep {
   to: string;
   photo: string;
   arrow: ArrowDirection;
+  /** Optional: move the arrow (default depends on the direction). */
+  arrowAt?: ArrowPosition;
+  /** Optional: tilt the arrow this many degrees clockwise. */
+  arrowTilt?: number;
   text: string;
 }
 
