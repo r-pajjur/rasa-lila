@@ -1,4 +1,5 @@
 import { Component, HostListener, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import { SwUpdate } from '@angular/service-worker';
 import { GraphService } from './graph.service';
 import { BuildingStep, NodeEntry } from './building.model';
 import { DestinationPickerComponent } from './destination-picker.component';
@@ -37,7 +38,14 @@ export class AppComponent {
 
   readonly resolveRoom = (room: number): NodeEntry | null => this.graph.anchorForRoom(room);
 
-  constructor(private readonly graph: GraphService) {
+  /** A newer version of the app has been downloaded and is waiting for a quiet moment. */
+  private updateReady = false;
+
+  constructor(
+    private readonly graph: GraphService,
+    private readonly updates: SwUpdate,
+  ) {
+    this.watchForUpdates();
     const at = new URLSearchParams(location.search).get('at') ?? '';
     this.at.set(at.trim());
     this.graph
@@ -96,6 +104,35 @@ export class AppComponent {
     }
     this.trip.set(null);
     this.noRouteTo.set('');
+    this.reloadIfIdle();
+  }
+
+  /**
+   * The app is saved on the phone for offline use, so a new version arrives in the
+   * background. Switch to it automatically, but never in the middle of a route.
+   */
+  private watchForUpdates(): void {
+    if (!this.updates.isEnabled) {
+      return;
+    }
+    this.updates.versionUpdates.subscribe(event => {
+      if (event.type === 'VERSION_READY') {
+        this.updateReady = true;
+        this.reloadIfIdle();
+      }
+    });
+    const check = () => this.updates.checkForUpdate().catch(() => {});
+    check();
+    // also look again whenever someone comes back to the tab
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') check();
+    });
+  }
+
+  private reloadIfIdle(): void {
+    if (this.updateReady && !this.trip()) {
+      location.reload();
+    }
   }
 
   /** Done with a route: clear the starting point so the next walk starts fresh. */
@@ -106,6 +143,7 @@ export class AppComponent {
     this.pickedByHand.set(false);
     // drop ?at= from the address too, so a refresh doesn't put the old start back
     history.replaceState(null, '', location.pathname);
+    this.reloadIfIdle();
   }
 
   /** The phone's back gesture and the browser's back button move between screens, not out of the app. */
@@ -120,5 +158,6 @@ export class AppComponent {
       this.at.set('');
       this.pickedByHand.set(false);
     }
+    this.reloadIfIdle();
   }
 }

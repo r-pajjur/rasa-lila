@@ -1,9 +1,9 @@
-import { Component, HostListener, Input, Output, EventEmitter, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, HostListener, Input, Output, EventEmitter, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NodeEntry } from './building.model';
 
 /**
  * The place picker (used for both "where are you starting from?" and "where to?"):
- * a searchable list of places, plus one "A room" entry where any room number can be typed.
+ * a list of places, plus one "A room" entry where any room number can be typed.
  */
 @Component({
   selector: 'app-destination-picker',
@@ -34,14 +34,6 @@ import { NodeEntry } from './building.model';
       </div>
     } @else {
       <h2>{{ heading }}</h2>
-      <input
-        class="search"
-        type="search"
-        placeholder="Search places"
-        [value]="query()"
-        (input)="query.set($any($event.target).value)"
-        aria-label="Search places"
-      />
       <ul class="list">
         @if (showRoomItem()) {
           <li>
@@ -62,10 +54,6 @@ import { NodeEntry } from './building.model';
               <span class="chev" aria-hidden="true">&rarr;</span>
             </button>
           </li>
-        } @empty {
-          @if (!showRoomItem()) {
-            <li class="none">Nothing matches "{{ query() }}".</li>
-          }
         }
       </ul>
     }
@@ -83,24 +71,17 @@ export class DestinationPickerComponent {
   /** Every room on the map in words, e.g. "44, 51 and 200–220"; empty hides the room entry. */
   @Input() roomSummary = '';
 
-  readonly query = signal('');
   readonly roomOpen = signal(false);
   readonly roomText = signal('');
   readonly roomError = signal('');
 
-  readonly visible = computed(() => {
-    const needle = this.query().trim().toLowerCase();
-    if (!needle) {
-      return this.destinations;
-    }
-    return this.destinations.filter(item => item.label.toLowerCase().includes(needle));
-  });
+  visible(): NodeEntry[] {
+    return this.destinations;
+  }
 
-  /** "A room" shows when there are rooms, and when a search looks like a room or a number. */
+  /** "A room" shows whenever the map has numbered rooms. */
   showRoomItem(): boolean {
-    if (!this.roomSummary) return false;
-    const needle = this.query().trim().toLowerCase();
-    return !needle || 'a room'.includes(needle) || needle.startsWith('room') || /^\d+$/.test(needle);
+    return Boolean(this.roomSummary);
   }
 
   roomHint(): string {
@@ -109,8 +90,7 @@ export class DestinationPickerComponent {
 
   openRooms(): void {
     this.roomOpen.set(true);
-    // a number typed into the search carries over
-    this.roomText.set(/^\d+$/.test(this.query().trim()) ? this.query().trim() : '');
+    this.roomText.set('');
     this.roomError.set('');
     history.pushState({ screen: 'room' }, '');
   }
