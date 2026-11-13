@@ -135,14 +135,22 @@ export class GraphService {
     if (!steps) {
       return null;
     }
-    const overrides = (this.data()?.overrides ?? []).filter(o => o.from === from && o.to === to);
-    return steps.map(step => {
-      const o = overrides.find(x => x.photo === step.photo);
-      if (!o) {
-        return step;
+    const overrides = this.data()?.overrides ?? [];
+    return steps.map((step, i) => {
+      const last = i === steps.length - 1;
+      let result = !last && step.throughText ? { ...step, text: step.throughText } : step;
+      const o = overrides.find(x =>
+        x.photo === step.photo &&
+        (x.from === undefined || x.from === from) &&
+        (x.to === undefined || x.to === to) &&
+        (x.before === undefined || x.before === steps[i + 1]?.photo) &&
+        (x.after === undefined || x.after === steps[i - 1]?.photo)
+      );
+      if (o) {
+        const { from: _f, to: _t, photo: _p, before: _b, after: _a, ...changes } = o;
+        result = { ...result, ...changes };
       }
-      const { from: _f, to: _t, photo: _p, ...changes } = o;
-      return { ...step, ...changes };
+      return result;
     });
   }
 

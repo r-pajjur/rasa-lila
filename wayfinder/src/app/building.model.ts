@@ -33,19 +33,27 @@ export interface BuildingStep {
   arrowAt?: ArrowPosition;
   /** Optional: tilt the arrow this many degrees clockwise. */
   arrowTilt?: number;
+  /** Optional: the instruction when a route only passes through here instead of ending here. */
+  throughText?: string;
   /** Optional: how long this step counts as when choosing a route (default 1). */
   cost?: number;
   text: string;
 }
 
 /**
- * A different instruction for one photo on one particular route — for when the same
- * spot needs other words or another arrow depending on where you are going.
+ * A different instruction for one photo in a particular situation — for when the same
+ * spot needs other words or another arrow depending on the walk. It applies when every
+ * condition given matches: the whole route (from/to), the photo shown next (before),
+ * or the photo shown just before it (after).
  */
 export interface RouteOverride {
-  from: string;
-  to: string;
   photo: string;
+  from?: string;
+  to?: string;
+  /** Applies when this photo is followed by that photo. */
+  before?: string;
+  /** Applies when this photo comes right after that photo. */
+  after?: string;
   text?: string;
   arrow?: ArrowDirection;
   arrowAt?: ArrowPosition;

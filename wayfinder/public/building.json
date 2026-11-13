@@ -131,6 +131,9 @@
       "destination": true,
       "rooms": { "from": 261, "to": 281 }
     },
+    "east-2-ext-hall": {
+      "label": "Hallway to the 2nd Floor Extension"
+    },
     "east-2-ext": {
       "label": "East Wing 2nd Floor Extension",
       "destination": true,
@@ -455,7 +458,8 @@
       "to": "east-1",
       "photo": "mToE1/mToE12.jpg",
       "arrow": "straight",
-      "text": "Rooms 113 to 132 are along this hallway — check the numbers on the doors."
+      "text": "Rooms 113 to 132 are along this hallway — check the numbers on the doors.",
+      "throughText": "Walk all the way to the end of the hallway."
     },
     {
       "from": "stairwell",
@@ -491,35 +495,53 @@
       "photo": "meToW2/meToW22.jpg",
       "arrow": "straight",
       "text": "Rooms 261 to 281 are along this hallway — check the numbers on the doors."
+    },
+    {
+      "from": "landing-2",
+      "to": "east-2-ext-hall",
+      "photo": "dhToE2/dhToE25.jpg",
+      "arrow": "turn-left",
+      "text": "Turn left here."
+    },
+    {
+      "from": "east-2-ext-hall",
+      "to": "east-2-ext",
+      "photo": "meToE2ext/meToE2ext2.jpg",
+      "arrow": "straight",
+      "text": "Rooms 244 to 247 are along this hallway — check the numbers on the doors."
+    },
+    {
+      "from": "east-1-door",
+      "to": "east-1-ext-hall",
+      "photo": "meToE1ext/meToE1ext1.jpg",
+      "arrow": "straight",
+      "text": "Walk down the hallway, past the water fountain."
+    },
+    {
+      "from": "east-1",
+      "to": "stairwell",
+      "photo": "dhToE2/dhToE23.jpg",
+      "arrow": "straight",
+      "text": "Go through the wooden door ahead, next to the whiteboard."
     }
   ],
   "overrides": [
     {
-      "from": "main-entrance",
-      "to": "mandir",
       "photo": "meToDh/mainEntrance.jpg",
+      "before": "dhToM/dhToM1.jpg",
       "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
       "arrow": "turn-left"
     },
     {
-      "from": "mandir",
-      "to": "main-entrance",
+      "photo": "mToDh/mandirDoor.jpg",
+      "before": "mToE1/mToE11.jpg",
+      "text": "Start at the mandir’s glass doors and turn left.",
+      "arrow": "turn-left"
+    },
+    {
       "photo": "dhToMe/dhToMe4.jpg",
+      "after": "mToDh/mToDh3.jpg",
       "text": "The main entrance is the door on your right."
-    },
-    {
-      "from": "main-entrance",
-      "to": "east-1",
-      "photo": "meToDh/mainEntrance.jpg",
-      "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
-      "arrow": "turn-left"
-    },
-    {
-      "from": "main-entrance",
-      "to": "basement-rooms",
-      "photo": "meToDh/mainEntrance.jpg",
-      "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
-      "arrow": "turn-left"
     }
   ]
 }
