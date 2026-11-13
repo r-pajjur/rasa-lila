@@ -39,6 +39,22 @@
       "label": "Library",
       "destination": true
     },
+    "main-entrance": {
+      "label": "Main Entrance",
+      "destination": true
+    },
+    "foyer": {
+      "label": "Foyer"
+    },
+    "wood-room": {
+      "label": "Wood-Panelled Room"
+    },
+    "pantry": {
+      "label": "Room with the Dish Cabinets"
+    },
+    "dh-hallway": {
+      "label": "Hallway to the Dining Hall"
+    },
     "mandir": {
       "label": "Mandir",
       "destination": true,
@@ -49,42 +65,42 @@
     {
       "from": "dining-hall",
       "to": "dining-hall-door",
-      "photo": "dhToR/dhToR1.jpg",
+      "photo": "dhToR200-220/dhBack.jpg",
       "arrow": "straight",
       "text": "Leave the dining hall through the doorway ahead, to the left of the rounded wood pillar."
     },
     {
       "from": "dining-hall-door",
       "to": "lobby",
-      "photo": "dhToR/dhToR2.jpg",
+      "photo": "dhToR200-220/dhToR200-220_2.jpg",
       "arrow": "straight",
       "text": "Walk the full length of the sun room, past the tables, to the far end."
     },
     {
       "from": "lobby",
       "to": "stairwell",
-      "photo": "dhToR/dhToR3.jpg",
+      "photo": "dhToR200-220/dhToR200-220_3.jpg",
       "arrow": "straight",
       "text": "Go through the wooden door ahead, next to the whiteboard."
     },
     {
       "from": "stairwell",
       "to": "landing-2",
-      "photo": "dhToR/dhToR4.jpg",
+      "photo": "dhToR200-220/dhToR200-220_4.jpg",
       "arrow": "up",
       "text": "Take the stairs up one flight to the second floor."
     },
     {
       "from": "landing-2",
       "to": "hall-2",
-      "photo": "dhToR/dhToR5.jpg",
+      "photo": "dhToR200-220/dhToR200-220_5.jpg",
       "arrow": "straight",
       "text": "Go straight through the doorway into the guest hallway."
     },
     {
       "from": "hall-2",
       "to": "rooms-200",
-      "photo": "dhToR/dhToR6.jpg",
+      "photo": "dhToR200-220/dhToR200-220_6.jpg",
       "arrow": "straight",
       "text": "Rooms 200 to 220 are along this hallway — check the numbers on the doors."
     },
@@ -108,6 +124,97 @@
       "photo": "dhToL/dhToL4.jpg",
       "arrow": "left",
       "text": "The library is through the open double doors on your left."
+    },
+    {
+      "from": "library",
+      "to": "lower-level",
+      "photo": "lToDh/lToDh1.jpg",
+      "arrow": "straight",
+      "text": "Leave the library through the hallway at the far end."
+    },
+    {
+      "from": "lower-level",
+      "to": "library-stairs",
+      "photo": "lToDh/lToDh2.jpg",
+      "arrow": "up",
+      "text": "Take the stairs up one floor."
+    },
+    {
+      "from": "library-stairs",
+      "to": "dining-hall-door",
+      "photo": "lToDh/lToDh3.jpg",
+      "arrow": "straight",
+      "text": "Walk down the hallway, past the water fountain."
+    },
+    {
+      "from": "dining-hall-door",
+      "to": "dining-hall",
+      "photo": "lToDh/lToDh4.jpg",
+      "arrow": "left",
+      "text": "Go through the wooden door on the left into the dining hall."
+    },
+    {
+      "from": "main-entrance",
+      "to": "foyer",
+      "photo": "meToDh/mainEntrance.jpg",
+      "arrow": "straight",
+      "text": "Walk into the foyer, toward the shrine."
+    },
+    {
+      "from": "foyer",
+      "to": "wood-room",
+      "photo": "meToDh/meToDh2.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway with the flower garland."
+    },
+    {
+      "from": "wood-room",
+      "to": "pantry",
+      "photo": "meToDh/meToDh3.jpg",
+      "arrow": "straight",
+      "text": "Walk through, past the tall wooden cabinet."
+    },
+    {
+      "from": "pantry",
+      "to": "dh-hallway",
+      "photo": "meToDh/meToDh4.jpg",
+      "arrow": "straight",
+      "text": "Go down the corridor and through the open white door."
+    },
+    {
+      "from": "dh-hallway",
+      "to": "dining-hall",
+      "photo": "meToDh/meToDh5.jpg",
+      "arrow": "straight",
+      "text": "The dining hall is through the double doors ahead."
+    },
+    {
+      "from": "dining-hall",
+      "to": "pantry",
+      "photo": "dhToMe/dhFront.jpg",
+      "arrow": "straight",
+      "text": "Leave the dining hall through the doorway with the marigold garland, and walk down the corridor."
+    },
+    {
+      "from": "pantry",
+      "to": "wood-room",
+      "photo": "dhToMe/dhToMe2.jpg",
+      "arrow": "right",
+      "text": "Walk past the dish cabinets and through the doorway on the right."
+    },
+    {
+      "from": "wood-room",
+      "to": "foyer",
+      "photo": "dhToMe/dhToMe3.jpg",
+      "arrow": "straight",
+      "text": "Go through the glass-panelled doors into the marble hall."
+    },
+    {
+      "from": "foyer",
+      "to": "main-entrance",
+      "photo": "dhToMe/dhToMe4.jpg",
+      "arrow": "left",
+      "text": "The main entrance is the door on your left."
     },
     {
       "from": "lobby",
