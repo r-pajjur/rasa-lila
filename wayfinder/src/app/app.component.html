@@ -45,6 +45,9 @@
         </div>
       }
       <div class="card">
+        @if (pickedByHand()) {
+          <button class="back" type="button" (click)="changeAnchor()">&larr; Back</button>
+        }
         <app-destination-picker
           [destinations]="choices()"
           [resolveRoom]="resolveRoom"

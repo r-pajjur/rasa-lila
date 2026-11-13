@@ -100,9 +100,10 @@ h2 {
 }
 
 .rooms .ghost {
-  padding: 6px 0;
-  margin-bottom: 10px;
-  font: 600 15px 'Inter', sans-serif;
+  min-height: 44px;
+  padding: 0;
+  margin-bottom: 6px;
+  font: 600 16px 'Inter', sans-serif;
   color: var(--ochre);
   background: none;
   border: 0;

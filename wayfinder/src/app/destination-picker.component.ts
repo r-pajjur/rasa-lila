@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, HostListener, Input, Output, EventEmitter, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NodeEntry, RoomRange } from './building.model';
 
 /**
@@ -12,7 +12,7 @@ import { NodeEntry, RoomRange } from './building.model';
   template: `
     @if (roomEntry()) {
       <div class="rooms">
-        <button class="ghost" type="button" (click)="closeRooms()">&larr; All destinations</button>
+        <button class="ghost" type="button" (click)="closeRooms()">&larr; Back</button>
         <h2>Which room?</h2>
         <p class="hint">{{ roomHint() }}</p>
         <form (submit)="submitRoom($event)">
@@ -92,14 +92,27 @@ export class DestinationPickerComponent {
       this.roomEntry.set(item);
       this.roomText.set('');
       this.roomError.set('');
+      history.pushState({ screen: 'room' }, '');
       return;
     }
     this.picked.emit({ node: item });
   }
 
   closeRooms(): void {
+    if (history.state?.screen === 'room') {
+      history.back();
+      return;
+    }
     this.roomEntry.set(null);
     this.roomError.set('');
+  }
+
+  @HostListener('window:popstate')
+  onPopState(): void {
+    if (history.state?.screen !== 'room') {
+      this.roomEntry.set(null);
+      this.roomError.set('');
+    }
   }
 
   submitRoom(event: Event): void {

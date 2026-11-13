@@ -7,8 +7,8 @@ drawn over it.
 ## How a visit works
 
 1. The QR code encodes the anchor it is posted at:
-   `https://<site>/wayfinder/?at=cafeteria`
-2. The app reads `at`, shows "You are at Cafeteria", and lists destinations.
+   `https://<site>/wayfinder/?at=dining-hall`
+2. The app reads `at`, shows "You are at Dining Hall", and lists destinations.
 3. Picking one runs a breadth-first search over the authored steps and plays
    the shortest path, one photo at a time.
 
@@ -22,7 +22,7 @@ Two keys, and that is the whole model.
 ```jsonc
 {
   "nodes": {
-    "cafeteria": { "label": "Cafeteria", "destination": true },
+    "dining-hall": { "label": "Dining Hall", "destination": true },
     "rooms-200": {
       "label": "Rooms 200–220",
       "destination": true,
@@ -31,11 +31,11 @@ Two keys, and that is the whole model.
   },
   "steps": [
     {
-      "from": "cafeteria",
-      "to": "sunroom",
-      "photo": "pic1.jpg",                  // a file in public/photos/
+      "from": "dining-hall",
+      "to": "dining-hall-door",
+      "photo": "dhToR/dhToR1.jpg",          // a file in public/photos/
       "arrow": "straight",                  // left | right | straight | up | down
-      "text": "Leave the cafeteria through the doorway ahead."
+      "text": "Leave the dining hall through the doorway ahead."
     }
   ]
 }
@@ -48,15 +48,39 @@ Two keys, and that is the whole model.
   anchors, authored once and reused by every route that passes through it.
 - **rooms** lets one anchor stand in for a numbered range, so a visitor types
   `214` instead of hunting through twenty list entries.
+- **aliases** (optional) maps an old anchor id to its new one, so QR codes
+  printed before a rename keep working: `"cafeteria": "dining-hall"`.
 
 Arrows are SVG drawn on top of the photo at runtime, never baked into the image
 — so re-labelling a leg means editing one line of JSON, not reshooting.
 
+## Photos
+
+One folder per route in `public/photos/`, named start + `To` + end, with the
+step number:
+
+```
+photos/
+  dhToR/   dining hall → rooms 200–220   dhToR1.jpg … dhToR6.jpg
+  dhToL/   dining hall → library         dhToL2.jpg … dhToL4.jpg
+  placeholder.svg
+```
+
+A step shared between routes keeps the name of the route it was shot for. The
+library route starts by leaving the dining hall, so its first step reuses
+`dhToR/dhToR1.jpg` and the folder starts at `dhToL2`.
+
+Photos are portrait, 1050×1400, saved upright. Phones store photos sideways
+with a "rotate when showing" flag; save the resized copy already rotated, so
+nothing depends on that flag.
+
 ## Adding a leg
 
-1. Photograph the walk, facing the direction of travel.
-2. Drop the JPG in `public/photos/`. Roughly 1400px on the long edge keeps the
-   page quick: `sips -Z 1400 -s formatOptions 72 in.JPG --out public/photos/x.jpg`
+1. Photograph the walk in portrait, standing where the QR code goes, facing the
+   direction of travel.
+2. Resize to about 1400px on the long edge, rotated upright, and save it in the
+   route's folder with the next name (`dhToL5.jpg`). Keep the full-size
+   originals out of the repo.
 3. Add the node to `nodes` if it is new, and a `steps` entry pointing at the
    photo.
 4. Print a QR code for `?at=<that node id>` and post it at the spot.
@@ -77,11 +101,12 @@ other way.
 
 ## What is still placeholder
 
-The cafeteria → rooms 200–220 route is real photography. **Mandir** and
-**library** are stubs: they use `photos/placeholder.svg` and their step text is
-marked `PLACEHOLDER`. Replace both once those legs are photographed.
+The dining hall → rooms 200–220 and dining hall → library routes are real
+photography. **Mandir** is still a stub: it uses `photos/placeholder.svg` and
+its step text is marked `PLACEHOLDER`.
 
-Steps are directed, so the map currently routes *to* the rooms but not back.
+Steps are directed, so the map currently routes *to* the rooms and the library
+but not back.
 Walking the route in reverse and photographing it adds the return legs.
 
 ## Commands

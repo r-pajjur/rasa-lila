@@ -29,6 +29,8 @@ export interface BuildingStep {
 
 export interface Building {
   building: string;
+  /** Old anchor ids that still resolve, so QR codes printed before a rename keep working. */
+  aliases?: Record<string, string>;
   nodes: Record<string, BuildingNode>;
   steps: BuildingStep[];
 }

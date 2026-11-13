@@ -14,7 +14,7 @@ import { ArrowOverlayComponent } from './arrow-overlay.component';
   template: `
     <div class="player">
       <div class="head">
-        <button class="ghost" type="button" (click)="quit.emit()">&larr; Start over</button>
+        <button class="ghost" type="button" (click)="quit.emit()">&larr; Back</button>
         <span class="counter">Step {{ index() + 1 }} of {{ steps.length }}</span>
       </div>
 
@@ -30,7 +30,7 @@ import { ArrowOverlayComponent } from './arrow-overlay.component';
       }
 
       <div class="controls">
-        <button class="btn quiet" type="button" [disabled]="index() === 0" (click)="back()">Back</button>
+        <button class="btn quiet" type="button" [disabled]="index() === 0" (click)="back()">Previous step</button>
         @if (arrived()) {
           <button class="btn" type="button" (click)="quit.emit()">Done</button>
         } @else {

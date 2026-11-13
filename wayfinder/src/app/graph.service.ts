@@ -42,6 +42,11 @@ export class GraphService {
     this.data.set(await response.json());
   }
 
+  /** The current id for an anchor, following a rename if the QR code uses an old one. */
+  canonical(id: string): string {
+    return this.data()?.aliases?.[id] ?? id;
+  }
+
   node(id: string) {
     return this.data()?.nodes[id];
   }
