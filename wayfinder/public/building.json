@@ -137,6 +137,9 @@
     "east-1-entry": {
       "label": "Start of the East Wing Hallway, 1st Floor"
     },
+    "east-1-stairs-door": {
+      "label": "Door to the East Stairs, 1st Floor"
+    },
     "library": {
       "label": "Library",
       "destination": true
@@ -466,7 +469,7 @@
       "photo": "mToE1/mToE12.jpg",
       "arrow": "straight",
       "text": "Rooms 113 to 132 are along this hallway — check the numbers on the doors.",
-      "throughText": "Walk all the way to the end of the hallway."
+      "throughText": "Walk down this hallway."
     },
     {
       "from": "stairwell",
@@ -525,13 +528,6 @@
       "text": "Walk down the hallway, past the water fountain."
     },
     {
-      "from": "east-1",
-      "to": "stairwell",
-      "photo": "dhToE2/dhToE23.jpg",
-      "arrow": "straight",
-      "text": "Go through the wooden door ahead, next to the whiteboard."
-    },
-    {
       "from": "mandir-corridor",
       "to": "past-mandir",
       "photo": "dhToM/dhToM3.jpg",
@@ -547,12 +543,25 @@
       "text": "Start at the mandir’s glass doors and turn left."
     },
     {
-      "from": "past-mandir",
-      "to": "east-1",
+      "from": "east-1",
+      "to": "east-1-stairs-door",
       "photo": "meToE1/meToE11.jpg",
       "arrow": "straight",
-      "text": "Rooms 113 to 132 are along this hallway — check the numbers on the doors.",
-      "throughText": "Continue down the hall until you reach this door."
+      "text": "Continue down the hall until you reach this door."
+    },
+    {
+      "from": "past-mandir",
+      "to": "east-1-door",
+      "photo": "mToE1/mToE11.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway and down the hallway."
+    },
+    {
+      "from": "east-1-stairs-door",
+      "to": "stairwell",
+      "photo": "dhToE2/dhToE23.jpg",
+      "arrow": "straight",
+      "text": "Go through the wooden door ahead, next to the whiteboard."
     }
   ],
   "overrides": [
