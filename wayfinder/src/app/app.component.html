@@ -14,22 +14,20 @@
         [steps]="active.steps"
         [destinationLabel]="active.label"
         (quit)="restart()"
+        (done)="finish()"
       />
     } @else if (!knownAnchor()) {
       <div class="card">
-        <h2>Which sign are you standing at?</h2>
-        <p class="muted">
-          @if (at()) {
-            The code said "{{ at() }}", which is not on the map. Pick your spot below.
-          } @else {
-            Scan the QR code on the wall, or pick your spot below.
-          }
-        </p>
-        <ul class="anchors">
-          @for (node of anchors(); track node.id) {
-            <li><button type="button" (click)="useAnchor(node.id)">{{ node.label }}</button></li>
-          }
-        </ul>
+        @if (at()) {
+          <p class="muted">That QR code isn’t on the map yet, so pick your spot below.</p>
+        }
+        <app-destination-picker
+          heading="Where are you starting from?"
+          [askRoom]="false"
+          [destinations]="anchors()"
+          [resolveRoom]="resolveRoom"
+          (picked)="useAnchor($event.node.id)"
+        />
       </div>
     } @else {
       @if (noRouteTo()) {

@@ -35,10 +35,6 @@
     "lower-level": {
       "label": "Lower Level"
     },
-    "library": {
-      "label": "Library",
-      "destination": true
-    },
     "main-entrance": {
       "label": "Main Entrance",
       "destination": true
@@ -50,15 +46,45 @@
       "label": "Wood-Panelled Room"
     },
     "pantry": {
-      "label": "Room with the Dish Cabinets"
+      "label": "Room with the Cabinets"
     },
     "dh-hallway": {
       "label": "Hallway to the Dining Hall"
     },
+    "back-stairs-top": {
+      "label": "Top of the Back Stairs"
+    },
+    "back-stairs-bottom": {
+      "label": "Bottom of the Back Stairs"
+    },
+    "library-corridor": {
+      "label": "Corridor to the Library"
+    },
+    "library-hall": {
+      "label": "Hallway outside the Library"
+    },
+    "library-stair-door": {
+      "label": "Door to the Library Stairs"
+    },
+    "upper-stair-landing": {
+      "label": "Top of the Library Stairs"
+    },
+    "upper-hall": {
+      "label": "Upstairs Hallway"
+    },
+    "marble-hall-end": {
+      "label": "End of the Marble Hall"
+    },
+    "mandir-corridor": {
+      "label": "Corridor outside the Mandir"
+    },
+    "library": {
+      "label": "Library",
+      "destination": true
+    },
     "mandir": {
       "label": "Mandir",
-      "destination": true,
-      "placeholder": true
+      "destination": true
     }
   },
   "steps": [
@@ -95,7 +121,7 @@
       "to": "hall-2",
       "photo": "dhToR200-220/dhToR200-220_5.jpg",
       "arrow": "turn-right",
-      "text": "Go straight through the doorway into the guest hallway."
+      "text": "Take a right through the doorway."
     },
     {
       "from": "hall-2",
@@ -106,25 +132,17 @@
     },
     {
       "from": "dining-hall-door",
-      "to": "library-stairs",
+      "to": "lower-level",
       "photo": "dhToL/dhToL2.jpg",
       "arrow": "none",
       "text": "Once you exit the dining hall, turn right and go down the stairs."
-    },
-    {
-      "from": "library-stairs",
-      "to": "lower-level",
-      "photo": "dhToL/dhToL3.jpg",
-      "arrow": "down",
-      "text": "Don’t go up. Take the stairs on the right down one floor.",
-      "arrowAt": "center"
     },
     {
       "from": "lower-level",
       "to": "library",
       "photo": "dhToL/dhToL4.jpg",
       "arrow": "turn-left",
-      "text": "The library is through the open double doors on your left."
+      "text": "The library is through the double doors on your left."
     },
     {
       "from": "library",
@@ -153,7 +171,8 @@
       "to": "dining-hall",
       "photo": "lToDh/lToDh4.jpg",
       "arrow": "none",
-      "text": "Go through the wooden door on the left into the dining hall."
+      "text": "Go through the wooden door on the left into the dining hall.",
+      "cost": 4
     },
     {
       "from": "main-entrance",
@@ -188,7 +207,8 @@
       "to": "dining-hall",
       "photo": "meToDh/meToDh5.jpg",
       "arrow": "straight",
-      "text": "The dining hall is through the double doors ahead."
+      "text": "The dining hall is through the double doors ahead.",
+      "cost": 4
     },
     {
       "from": "dining-hall",
@@ -202,7 +222,7 @@
       "to": "wood-room",
       "photo": "dhToMe/dhToMe2.jpg",
       "arrow": "turn-right",
-      "text": "Walk past the dish cabinets and through the doorway on the right."
+      "text": "Walk past the cabinets and through the doorway on the right."
     },
     {
       "from": "wood-room",
@@ -219,11 +239,123 @@
       "text": "The main entrance is the door on your left."
     },
     {
-      "from": "lobby",
+      "from": "foyer",
+      "to": "marble-hall-end",
+      "photo": "dhToM/dhToM1.jpg",
+      "arrow": "straight",
+      "text": "Walk all the way down the marble hall."
+    },
+    {
+      "from": "marble-hall-end",
+      "to": "mandir-corridor",
+      "photo": "dhToM/dhToM2.jpg",
+      "arrow": "straight",
+      "text": "Go through the double doors and down the steps."
+    },
+    {
+      "from": "mandir-corridor",
       "to": "mandir",
-      "photo": "placeholder.svg",
-      "arrow": "right",
-      "text": "PLACEHOLDER — photograph this leg: turn right out of the lobby toward the mandir."
+      "photo": "dhToM/dhToM3.jpg",
+      "arrow": "turn-left",
+      "text": "The mandir is through the glass doors on the left."
+    },
+    {
+      "from": "mandir",
+      "to": "mandir-corridor",
+      "photo": "mToDh/mandirDoor.jpg",
+      "arrow": "none",
+      "text": "Start at the mandir’s glass doors."
+    },
+    {
+      "from": "mandir-corridor",
+      "to": "marble-hall-end",
+      "photo": "mToDh/mToDh2.jpg",
+      "arrow": "straight",
+      "text": "Go up the steps and through the door."
+    },
+    {
+      "from": "marble-hall-end",
+      "to": "foyer",
+      "photo": "mToDh/mToDh3.jpg",
+      "arrow": "straight",
+      "text": "Walk through the wood-panelled hall toward the marble hall."
+    },
+    {
+      "from": "dh-hallway",
+      "to": "back-stairs-top",
+      "photo": "meToL/meToL1.jpg",
+      "arrow": "straight",
+      "text": "Go through the door ahead to the stairs."
+    },
+    {
+      "from": "back-stairs-top",
+      "to": "back-stairs-bottom",
+      "photo": "meToL/meToL2.jpg",
+      "arrow": "down",
+      "text": "Take the stairs down."
+    },
+    {
+      "from": "back-stairs-bottom",
+      "to": "library-corridor",
+      "photo": "meToL/meToL3.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway ahead."
+    },
+    {
+      "from": "library-corridor",
+      "to": "library",
+      "photo": "meToL/meToL4.jpg",
+      "arrow": "straight",
+      "text": "Walk down the corridor to the library."
+    },
+    {
+      "from": "library",
+      "to": "library-hall",
+      "photo": "lToMe/lToMe1.jpg",
+      "arrow": "straight",
+      "text": "Leave the library through the hallway ahead."
+    },
+    {
+      "from": "library-hall",
+      "to": "library-stair-door",
+      "photo": "lToMe/lToMe2.jpg",
+      "arrow": "straight",
+      "text": "Walk down the hallway."
+    },
+    {
+      "from": "library-stair-door",
+      "to": "back-stairs-bottom",
+      "photo": "lToMe/lToMe3.jpg",
+      "arrow": "straight",
+      "text": "Go through the door ahead."
+    },
+    {
+      "from": "back-stairs-bottom",
+      "to": "upper-stair-landing",
+      "photo": "lToMe/lToMe4.jpg",
+      "arrow": "up",
+      "text": "Take the stairs up."
+    },
+    {
+      "from": "upper-stair-landing",
+      "to": "upper-hall",
+      "photo": "lToMe/lToMe5.jpg",
+      "arrow": "straight",
+      "text": "Go through the white door ahead."
+    },
+    {
+      "from": "upper-hall",
+      "to": "dh-hallway",
+      "photo": "lToMe/lToMe6.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway into the hallway."
+    },
+    {
+      "from": "dh-hallway",
+      "to": "pantry",
+      "photo": "lToMe/lToMe7.jpg",
+      "arrow": "straight",
+      "text": "Walk all the way down the hallway."
     }
   ]
 }

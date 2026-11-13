@@ -80,7 +80,8 @@ export class GraphService {
 
   /**
    * Shortest walk from one anchor to another, as an ordered list of steps.
-   * Breadth-first, so the first route found is the one with fewest legs.
+   * Each step counts as 1 unless the map gives it a cost (walking into the dining
+   * hall counts as longer, so routes only cut through it when there is no good way round).
    * Returns null when the graph has no path.
    */
   route(from: string, to: string): BuildingStep[] | null {
@@ -91,24 +92,32 @@ export class GraphService {
       return [];
     }
     const adjacency = this.adjacency();
+    const distance = new Map<string, number>([[from, 0]]);
     const cameBy = new Map<string, BuildingStep>();
-    const seen = new Set<string>([from]);
-    const queue: string[] = [from];
-    while (queue.length) {
-      const current = queue.shift()!;
+    const done = new Set<string>();
+    for (;;) {
+      // the closest anchor not yet settled (the map is small, so a plain scan is plenty)
+      let current: string | null = null;
+      for (const [id, d] of distance) {
+        if (!done.has(id) && (current === null || d < distance.get(current)!)) {
+          current = id;
+        }
+      }
+      if (current === null) {
+        return null;
+      }
+      if (current === to) {
+        return this.unwind(cameBy, from, to);
+      }
+      done.add(current);
       for (const step of adjacency.get(current) ?? []) {
-        if (seen.has(step.to)) {
-          continue;
+        const d = distance.get(current)! + (step.cost ?? 1);
+        if (d < (distance.get(step.to) ?? Infinity)) {
+          distance.set(step.to, d);
+          cameBy.set(step.to, step);
         }
-        seen.add(step.to);
-        cameBy.set(step.to, step);
-        if (step.to === to) {
-          return this.unwind(cameBy, from, to);
-        }
-        queue.push(step.to);
       }
     }
-    return null;
   }
 
   private unwind(cameBy: Map<string, BuildingStep>, from: string, to: string): BuildingStep[] {

@@ -33,23 +33,23 @@ import { NodeEntry, RoomRange } from './building.model';
         </form>
       </div>
     } @else {
-      <h2>Where do you want to go?</h2>
+      <h2>{{ heading }}</h2>
       <input
         class="search"
         type="search"
-        placeholder="Search destinations"
+        placeholder="Search places"
         [value]="query()"
         (input)="query.set($any($event.target).value)"
-        aria-label="Search destinations"
+        aria-label="Search places"
       />
       <ul class="list">
         @for (item of visible(); track item.id) {
           <li>
             <button type="button" (click)="choose(item)">
               <span class="name">{{ item.label }}</span>
-              @if (item.rooms) {
+              @if (item.rooms && askRoom) {
                 <span class="sub">Enter a room number</span>
-              } @else if (item.placeholder) {
+              } @else if (item.placeholder && askRoom) {
                 <span class="sub">Photos not taken yet</span>
               }
               <span class="chev" aria-hidden="true">&rarr;</span>
@@ -68,6 +68,9 @@ export class DestinationPickerComponent {
   /** Resolves a typed room number to an anchor id, or null if unknown. */
   @Input({ required: true }) resolveRoom!: (room: number) => NodeEntry | null;
   @Output() picked = new EventEmitter<{ node: NodeEntry; room?: number }>();
+  @Input() heading = 'Where do you wish to go?';
+  /** Ask for a room number when a room range is picked (off when choosing where you are). */
+  @Input() askRoom = true;
 
   readonly query = signal('');
   readonly roomEntry = signal<NodeEntry | null>(null);
@@ -88,7 +91,7 @@ export class DestinationPickerComponent {
   }
 
   choose(item: NodeEntry): void {
-    if (item.rooms) {
+    if (item.rooms && this.askRoom) {
       this.roomEntry.set(item);
       this.roomText.set('');
       this.roomError.set('');

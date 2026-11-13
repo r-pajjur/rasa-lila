@@ -36,9 +36,9 @@ import { ArrowOverlayComponent } from './arrow-overlay.component';
       </figure>
 
       <div class="controls">
-        <button class="btn quiet" type="button" [disabled]="index() === 0" (click)="back()">Previous step</button>
+        <button class="btn quiet" type="button" [disabled]="index() === 0" (click)="back()">Previous</button>
         @if (arrived()) {
-          <button class="btn" type="button" (click)="quit.emit()">Done</button>
+          <button class="btn" type="button" (click)="done.emit()">Done</button>
         } @else {
           <button class="btn" type="button" (click)="next()">Next &rarr;</button>
         }
@@ -57,7 +57,10 @@ export class StepPlayerComponent {
   @Input({ required: true }) steps!: BuildingStep[];
   @Input({ required: true }) destinationLabel!: string;
   @Input() photoBase = 'photos/';
+  /** Back to the destination list. */
   @Output() quit = new EventEmitter<void>();
+  /** Finished the route: start over from "Where are you starting from?". */
+  @Output() done = new EventEmitter<void>();
 
   readonly index = signal(0);
   readonly current = computed(() => this.steps[this.index()]);

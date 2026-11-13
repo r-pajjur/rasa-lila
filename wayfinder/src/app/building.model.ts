@@ -31,6 +31,8 @@ export interface BuildingStep {
   arrowAt?: ArrowPosition;
   /** Optional: tilt the arrow this many degrees clockwise. */
   arrowTilt?: number;
+  /** Optional: how long this step counts as when choosing a route (default 1). */
+  cost?: number;
   text: string;
 }
 

@@ -95,6 +95,16 @@ export class AppComponent {
     this.noRouteTo.set('');
   }
 
+  /** Done with a route: clear the starting point so the next walk starts fresh. */
+  finish(): void {
+    this.trip.set(null);
+    this.noRouteTo.set('');
+    this.at.set('');
+    this.pickedByHand.set(false);
+    // drop ?at= from the address too, so a refresh doesn't put the old start back
+    history.replaceState(null, '', location.pathname);
+  }
+
   /** The phone's back gesture and the browser's back button move between screens, not out of the app. */
   @HostListener('window:popstate')
   onPopState(): void {
