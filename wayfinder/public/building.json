@@ -2,7 +2,8 @@
   "building": "Life Gurukula",
   "aliases": {
     "cafeteria": "dining-hall",
-    "sunroom": "dining-hall-door"
+    "sunroom": "dining-hall-door",
+    "rooms-200": "east-2"
   },
   "nodes": {
     "dining-hall": {
@@ -23,11 +24,6 @@
     },
     "hall-2": {
       "label": "Second Floor Hallway"
-    },
-    "rooms-200": {
-      "label": "Rooms 200–220",
-      "destination": true,
-      "rooms": { "from": 200, "to": 220 }
     },
     "library-stairs": {
       "label": "Stairs by the Water Fountain"
@@ -85,57 +81,112 @@
     "mandir": {
       "label": "Mandir",
       "destination": true
+    },
+    "basement-stairs-door": {
+      "label": "Doorway to the Basement Stairs"
+    },
+    "basement-stairs-top": {
+      "label": "Top of the Basement Stairs"
+    },
+    "basement-stairs-bottom": {
+      "label": "Bottom of the Basement Stairs"
+    },
+    "basement-hall": {
+      "label": "Basement Hallway"
+    },
+    "basement-rooms": {
+      "label": "Basement Rooms 44 and 51",
+      "destination": true,
+      "roomNumbers": [44, 51]
+    },
+    "east-2": {
+      "label": "East Wing, 2nd Floor",
+      "destination": true,
+      "rooms": { "from": 218, "to": 233 }
+    },
+    "east-1-door": {
+      "label": "Doorway to the East Wing, 1st Floor"
+    },
+    "east-1": {
+      "label": "East Wing, 1st Floor",
+      "destination": true,
+      "rooms": { "from": 113, "to": 132 }
+    },
+    "east-1-ext-hall": {
+      "label": "Hallway to the 1st Floor Extension"
+    },
+    "east-1-ext": {
+      "label": "East Wing 1st Floor Extension",
+      "destination": true,
+      "rooms": { "from": 144, "to": 147 }
+    },
+    "back-stairs-2": {
+      "label": "Back Stairs, 2nd Floor"
+    },
+    "west-2-hall": {
+      "label": "West Wing Hallway, 2nd Floor"
+    },
+    "west-2": {
+      "label": "West Wing, 2nd Floor",
+      "destination": true,
+      "rooms": { "from": 261, "to": 281 }
+    },
+    "east-2-ext": {
+      "label": "East Wing 2nd Floor Extension",
+      "destination": true,
+      "rooms": { "from": 244, "to": 247 }
     }
   },
   "steps": [
     {
       "from": "dining-hall",
       "to": "dining-hall-door",
-      "photo": "dhToR200-220/dhBack.jpg",
+      "photo": "dhToE2/dhBack.jpg",
       "arrow": "straight",
       "text": "Leave the dining hall through the doorway ahead, to the left of the rounded wood pillar."
     },
     {
       "from": "dining-hall-door",
       "to": "lobby",
-      "photo": "dhToR200-220/dhToR200-220_2.jpg",
+      "photo": "dhToE2/dhToE22.jpg",
       "arrow": "straight",
       "text": "Walk the full length of the sun room, past the tables, to the far end."
     },
     {
       "from": "lobby",
       "to": "stairwell",
-      "photo": "dhToR200-220/dhToR200-220_3.jpg",
+      "photo": "dhToE2/dhToE23.jpg",
       "arrow": "straight",
       "text": "Go through the wooden door ahead, next to the whiteboard."
     },
     {
       "from": "stairwell",
       "to": "landing-2",
-      "photo": "dhToR200-220/dhToR200-220_4.jpg",
+      "photo": "dhToE2/dhToE24.jpg",
       "arrow": "up",
       "text": "Take the stairs up one flight to the second floor."
     },
     {
       "from": "landing-2",
       "to": "hall-2",
-      "photo": "dhToR200-220/dhToR200-220_5.jpg",
+      "photo": "dhToE2/dhToE25.jpg",
       "arrow": "turn-right",
       "text": "Take a right through the doorway."
     },
     {
       "from": "hall-2",
-      "to": "rooms-200",
-      "photo": "dhToR200-220/dhToR200-220_6.jpg",
+      "to": "east-2",
+      "photo": "dhToE2/dhToE26.jpg",
       "arrow": "straight",
-      "text": "Rooms 200 to 220 are along this hallway — check the numbers on the doors."
+      "text": "Rooms 218 to 233 are along this hallway — check the numbers on the doors."
     },
     {
       "from": "dining-hall-door",
       "to": "lower-level",
       "photo": "dhToL/dhToL2.jpg",
-      "arrow": "none",
-      "text": "Once you exit the dining hall, turn right and go down the stairs."
+      "arrow": "down",
+      "text": "Once you exit the dining hall, turn right and go down the stairs.",
+      "arrowTilt": -45
     },
     {
       "from": "lower-level",
@@ -156,7 +207,7 @@
       "to": "library-stairs",
       "photo": "lToDh/lToDh2.jpg",
       "arrow": "up",
-      "text": "Go all the way down the hallway and take the stairs up.",
+      "text": "Go all the way down the hallway, take the stairs on your right, and go up one flight.",
       "arrowTilt": 30
     },
     {
@@ -179,7 +230,7 @@
       "to": "foyer",
       "photo": "meToDh/mainEntrance.jpg",
       "arrow": "turn-right",
-      "text": "Start next to the murthi. Facing the murthi, turn right."
+      "text": "Start next to the front entrance mūrti. Facing this mūrti, turn right."
     },
     {
       "from": "foyer",
@@ -250,7 +301,7 @@
       "to": "mandir-corridor",
       "photo": "dhToM/dhToM2.jpg",
       "arrow": "straight",
-      "text": "Go through the double doors and down the steps."
+      "text": "Go through the double doors, down the steps, and turn right."
     },
     {
       "from": "mandir-corridor",
@@ -263,7 +314,7 @@
       "from": "mandir",
       "to": "mandir-corridor",
       "photo": "mToDh/mandirDoor.jpg",
-      "arrow": "none",
+      "arrow": "turn-right",
       "text": "Start at the mandir’s glass doors."
     },
     {
@@ -281,11 +332,11 @@
       "text": "Walk through the wood-panelled hall toward the marble hall."
     },
     {
-      "from": "dh-hallway",
+      "from": "pantry",
       "to": "back-stairs-top",
       "photo": "meToL/meToL1.jpg",
-      "arrow": "straight",
-      "text": "Go through the door ahead to the stairs."
+      "arrow": "turn-left",
+      "text": "Turn left into the stairwell."
     },
     {
       "from": "back-stairs-top",
@@ -298,8 +349,8 @@
       "from": "back-stairs-bottom",
       "to": "library-corridor",
       "photo": "meToL/meToL3.jpg",
-      "arrow": "straight",
-      "text": "Go through the doorway ahead."
+      "arrow": "turn-left",
+      "text": "Turn left here."
     },
     {
       "from": "library-corridor",
@@ -313,14 +364,14 @@
       "to": "library-hall",
       "photo": "lToMe/lToMe1.jpg",
       "arrow": "straight",
-      "text": "Leave the library through the hallway ahead."
+      "text": "Leave the library on the side with the wall of cabinets."
     },
     {
       "from": "library-hall",
       "to": "library-stair-door",
       "photo": "lToMe/lToMe2.jpg",
       "arrow": "straight",
-      "text": "Walk down the hallway."
+      "text": "Go to the brown door. The stairwell is on your right. Don’t go toward the teal flooring."
     },
     {
       "from": "library-stair-door",
@@ -334,7 +385,7 @@
       "to": "upper-stair-landing",
       "photo": "lToMe/lToMe4.jpg",
       "arrow": "up",
-      "text": "Take the stairs up."
+      "text": "Take the stairs up two flights. The first flight only leads outside."
     },
     {
       "from": "upper-stair-landing",
@@ -347,7 +398,7 @@
       "from": "upper-hall",
       "to": "dh-hallway",
       "photo": "lToMe/lToMe6.jpg",
-      "arrow": "straight",
+      "arrow": "turn-right",
       "text": "Go through the doorway into the hallway."
     },
     {
@@ -356,6 +407,119 @@
       "photo": "lToMe/lToMe7.jpg",
       "arrow": "straight",
       "text": "Walk all the way down the hallway."
+    },
+    {
+      "from": "mandir-corridor",
+      "to": "basement-stairs-door",
+      "photo": "mToB/mToB1.jpg",
+      "arrow": "straight",
+      "text": "Go through the double doors and down the corridor."
+    },
+    {
+      "from": "basement-stairs-door",
+      "to": "basement-stairs-top",
+      "photo": "mToB/mToB2.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway to the stairs."
+    },
+    {
+      "from": "basement-stairs-top",
+      "to": "basement-stairs-bottom",
+      "photo": "mToB/mToB3.jpg",
+      "arrow": "down",
+      "text": "Take the stairs down to the red door."
+    },
+    {
+      "from": "basement-stairs-bottom",
+      "to": "basement-hall",
+      "photo": "mToB/mToB4.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway into the hallway."
+    },
+    {
+      "from": "basement-hall",
+      "to": "basement-rooms",
+      "photo": "mToB/mToB5.jpg",
+      "arrow": "straight",
+      "text": "Rooms 44 and 51 are along this hallway — check the numbers on the doors."
+    },
+    {
+      "from": "mandir-corridor",
+      "to": "east-1-door",
+      "photo": "mToE1/mToE11.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway and down the hallway."
+    },
+    {
+      "from": "east-1-door",
+      "to": "east-1",
+      "photo": "mToE1/mToE12.jpg",
+      "arrow": "straight",
+      "text": "Rooms 113 to 132 are along this hallway — check the numbers on the doors."
+    },
+    {
+      "from": "stairwell",
+      "to": "east-1-ext-hall",
+      "photo": "meToE1ext/meToE1ext1.jpg",
+      "arrow": "straight",
+      "text": "Walk down the hallway, past the water fountain."
+    },
+    {
+      "from": "east-1-ext-hall",
+      "to": "east-1-ext",
+      "photo": "meToE1ext/meToE1ext2.jpg",
+      "arrow": "straight",
+      "text": "Rooms 144 to 147 are along this hallway — check the numbers on the doors."
+    },
+    {
+      "from": "back-stairs-top",
+      "to": "back-stairs-2",
+      "photo": "meToL/meToL2.jpg",
+      "arrow": "up",
+      "text": "Take the stairs up one floor."
+    },
+    {
+      "from": "back-stairs-2",
+      "to": "west-2-hall",
+      "photo": "meToW2/meToW21.jpg",
+      "arrow": "straight",
+      "text": "Go through the door ahead."
+    },
+    {
+      "from": "west-2-hall",
+      "to": "west-2",
+      "photo": "meToW2/meToW22.jpg",
+      "arrow": "straight",
+      "text": "Rooms 261 to 281 are along this hallway — check the numbers on the doors."
+    }
+  ],
+  "overrides": [
+    {
+      "from": "main-entrance",
+      "to": "mandir",
+      "photo": "meToDh/mainEntrance.jpg",
+      "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
+      "arrow": "turn-left"
+    },
+    {
+      "from": "mandir",
+      "to": "main-entrance",
+      "photo": "dhToMe/dhToMe4.jpg",
+      "text": "The main entrance is the door on your right."
+    },
+    {
+      "from": "main-entrance",
+      "to": "east-1",
+      "photo": "meToDh/mainEntrance.jpg",
+      "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
+      "arrow": "turn-left"
+    },
+    {
+      "from": "main-entrance",
+      "to": "basement-rooms",
+      "photo": "meToDh/mainEntrance.jpg",
+      "text": "Start next to the front entrance mūrti. Facing this mūrti, turn left.",
+      "arrow": "turn-left"
     }
   ]
 }

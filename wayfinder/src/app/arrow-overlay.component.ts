@@ -100,18 +100,9 @@ export class ArrowOverlayComponent {
     return this.direction === 'turn-left' || this.direction === 'turn-right';
   }
 
+  /** Every arrow sits in the centre of the photo unless a step says otherwise. */
   placement(): ArrowPosition {
-    if (this.at) return this.at;
-    switch (this.direction) {
-      case 'left':
-        return 'left';
-      case 'right':
-        return 'right';
-      case 'down':
-        return 'bottom';
-      default:
-        return 'center';
-    }
+    return this.at ?? 'center';
   }
 
   /** Degrees to rotate the base arrow, which points up. */

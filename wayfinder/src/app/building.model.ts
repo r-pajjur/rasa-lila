@@ -17,6 +17,8 @@ export interface BuildingNode {
   destination?: boolean;
   /** Numbered rooms reached from this anchor, e.g. 200-220. */
   rooms?: RoomRange;
+  /** Or specific room numbers, when they aren't a continuous range (e.g. 44 and 51). */
+  roomNumbers?: number[];
   /** Still using placeholder photography. */
   placeholder?: boolean;
 }
@@ -36,12 +38,28 @@ export interface BuildingStep {
   text: string;
 }
 
+/**
+ * A different instruction for one photo on one particular route — for when the same
+ * spot needs other words or another arrow depending on where you are going.
+ */
+export interface RouteOverride {
+  from: string;
+  to: string;
+  photo: string;
+  text?: string;
+  arrow?: ArrowDirection;
+  arrowAt?: ArrowPosition;
+  arrowTilt?: number;
+}
+
 export interface Building {
   building: string;
   /** Old anchor ids that still resolve, so QR codes printed before a rename keep working. */
   aliases?: Record<string, string>;
   nodes: Record<string, BuildingNode>;
   steps: BuildingStep[];
+  /** Route-specific versions of a step's instruction (see RouteOverride). */
+  overrides?: RouteOverride[];
 }
 
 /** A node id paired with its data, for iterating in templates. */

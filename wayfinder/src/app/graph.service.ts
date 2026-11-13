@@ -63,20 +63,29 @@ export class GraphService {
   anchorForRoom(room: number): NodeEntry | null {
     const nodes = this.data()?.nodes ?? {};
     for (const [id, node] of Object.entries(nodes)) {
-      if (node.rooms && room >= node.rooms.from && room <= node.rooms.to) {
+      const inRange = node.rooms && room >= node.rooms.from && room <= node.rooms.to;
+      if (inRange || node.roomNumbers?.includes(room)) {
         return { id, ...node };
       }
     }
     return null;
   }
 
-  /** Every room number the map can route to, low to high. */
-  readonly roomRanges = computed(() =>
-    Object.values(this.data()?.nodes ?? {})
-      .map(node => node.rooms)
-      .filter((range): range is NonNullable<typeof range> => Boolean(range))
-      .sort((a, b) => a.from - b.from)
-  );
+  /** Every room the map knows, in words, low to high: "44, 51 and 200–220". Empty if none. */
+  readonly roomSummary = computed(() => {
+    const parts: { at: number; text: string }[] = [];
+    for (const node of Object.values(this.data()?.nodes ?? {})) {
+      if (node.rooms) parts.push({ at: node.rooms.from, text: `${node.rooms.from}–${node.rooms.to}` });
+      for (const n of node.roomNumbers ?? []) parts.push({ at: n, text: String(n) });
+    }
+    const texts = parts.sort((a, b) => a.at - b.at).map(p => p.text);
+    return texts.length > 1 ? `${texts.slice(0, -1).join(', ')} and ${texts[texts.length - 1]}` : texts.join('');
+  });
+
+  /** True for anchors that stand for numbered rooms; they're reached by typing a number. */
+  isRoomAnchor(node: { rooms?: unknown; roomNumbers?: unknown[] }): boolean {
+    return Boolean(node.rooms || node.roomNumbers?.length);
+  }
 
   /**
    * Shortest walk from one anchor to another, as an ordered list of steps.
@@ -118,6 +127,23 @@ export class GraphService {
         }
       }
     }
+  }
+
+  /** The route from one anchor to another, with any route-specific instructions applied. */
+  directions(from: string, to: string): BuildingStep[] | null {
+    const steps = this.route(from, to);
+    if (!steps) {
+      return null;
+    }
+    const overrides = (this.data()?.overrides ?? []).filter(o => o.from === from && o.to === to);
+    return steps.map(step => {
+      const o = overrides.find(x => x.photo === step.photo);
+      if (!o) {
+        return step;
+      }
+      const { from: _f, to: _t, photo: _p, ...changes } = o;
+      return { ...step, ...changes };
+    });
   }
 
   private unwind(cameBy: Map<string, BuildingStep>, from: string, to: string): BuildingStep[] {

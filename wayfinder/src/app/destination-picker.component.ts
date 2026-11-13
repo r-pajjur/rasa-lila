@@ -1,16 +1,16 @@
 import { Component, HostListener, Input, Output, EventEmitter, computed, signal, ChangeDetectionStrategy } from '@angular/core';
-import { NodeEntry, RoomRange } from './building.model';
+import { NodeEntry } from './building.model';
 
 /**
- * The "Where to?" screen: a searchable list of destinations, plus a
- * number pad path for the ranged rooms.
+ * The place picker (used for both "where are you starting from?" and "where to?"):
+ * a searchable list of places, plus one "A room" entry where any room number can be typed.
  */
 @Component({
   selector: 'app-destination-picker',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (roomEntry()) {
+    @if (roomOpen()) {
       <div class="rooms">
         <button class="ghost" type="button" (click)="closeRooms()">&larr; Back</button>
         <h2>Which room?</h2>
@@ -21,7 +21,7 @@ import { NodeEntry, RoomRange } from './building.model';
             class="room-field"
             type="number"
             inputmode="numeric"
-            placeholder="214"
+            placeholder="e.g. 44"
             [value]="roomText()"
             (input)="roomText.set($any($event.target).value)"
             aria-label="Room number"
@@ -43,20 +43,29 @@ import { NodeEntry, RoomRange } from './building.model';
         aria-label="Search places"
       />
       <ul class="list">
+        @if (showRoomItem()) {
+          <li>
+            <button type="button" (click)="openRooms()">
+              <span class="name">A room</span>
+              <span class="sub">Type the room number</span>
+              <span class="chev" aria-hidden="true">&rarr;</span>
+            </button>
+          </li>
+        }
         @for (item of visible(); track item.id) {
           <li>
             <button type="button" (click)="choose(item)">
               <span class="name">{{ item.label }}</span>
-              @if (item.rooms && askRoom) {
-                <span class="sub">Enter a room number</span>
-              } @else if (item.placeholder && askRoom) {
+              @if (item.placeholder && askRoom) {
                 <span class="sub">Photos not taken yet</span>
               }
               <span class="chev" aria-hidden="true">&rarr;</span>
             </button>
           </li>
         } @empty {
-          <li class="none">Nothing matches "{{ query() }}".</li>
+          @if (!showRoomItem()) {
+            <li class="none">Nothing matches "{{ query() }}".</li>
+          }
         }
       </ul>
     }
@@ -69,11 +78,13 @@ export class DestinationPickerComponent {
   @Input({ required: true }) resolveRoom!: (room: number) => NodeEntry | null;
   @Output() picked = new EventEmitter<{ node: NodeEntry; room?: number }>();
   @Input() heading = 'Where do you wish to go?';
-  /** Ask for a room number when a room range is picked (off when choosing where you are). */
+  /** Show "Photos not taken yet" notes (only useful when choosing where to go). */
   @Input() askRoom = true;
+  /** Every room on the map in words, e.g. "44, 51 and 200–220"; empty hides the room entry. */
+  @Input() roomSummary = '';
 
   readonly query = signal('');
-  readonly roomEntry = signal<NodeEntry | null>(null);
+  readonly roomOpen = signal(false);
   readonly roomText = signal('');
   readonly roomError = signal('');
 
@@ -85,19 +96,26 @@ export class DestinationPickerComponent {
     return this.destinations.filter(item => item.label.toLowerCase().includes(needle));
   });
 
+  /** "A room" shows when there are rooms, and when a search looks like a room or a number. */
+  showRoomItem(): boolean {
+    if (!this.roomSummary) return false;
+    const needle = this.query().trim().toLowerCase();
+    return !needle || 'a room'.includes(needle) || needle.startsWith('room') || /^\d+$/.test(needle);
+  }
+
   roomHint(): string {
-    const range: RoomRange | undefined = this.roomEntry()?.rooms;
-    return range ? `Rooms ${range.from} to ${range.to}.` : '';
+    return `Rooms ${this.roomSummary}.`;
+  }
+
+  openRooms(): void {
+    this.roomOpen.set(true);
+    // a number typed into the search carries over
+    this.roomText.set(/^\d+$/.test(this.query().trim()) ? this.query().trim() : '');
+    this.roomError.set('');
+    history.pushState({ screen: 'room' }, '');
   }
 
   choose(item: NodeEntry): void {
-    if (item.rooms && this.askRoom) {
-      this.roomEntry.set(item);
-      this.roomText.set('');
-      this.roomError.set('');
-      history.pushState({ screen: 'room' }, '');
-      return;
-    }
     this.picked.emit({ node: item });
   }
 
@@ -106,14 +124,14 @@ export class DestinationPickerComponent {
       history.back();
       return;
     }
-    this.roomEntry.set(null);
+    this.roomOpen.set(false);
     this.roomError.set('');
   }
 
   @HostListener('window:popstate')
   onPopState(): void {
     if (history.state?.screen !== 'room') {
-      this.roomEntry.set(null);
+      this.roomOpen.set(false);
       this.roomError.set('');
     }
   }

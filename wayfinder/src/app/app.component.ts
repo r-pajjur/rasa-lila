@@ -30,7 +30,10 @@ export class AppComponent {
   readonly knownAnchor = computed(() => this.graph.exists(this.at()));
 
   /** Everywhere worth offering, minus wherever the visitor already is. */
-  readonly choices = computed(() => this.graph.destinations().filter(node => node.id !== this.at()));
+  readonly choices = computed(() =>
+    this.graph.destinations().filter(node => node.id !== this.at() && !this.graph.isRoomAnchor(node))
+  );
+  readonly roomSummary = computed(() => this.graph.roomSummary());
 
   readonly resolveRoom = (room: number): NodeEntry | null => this.graph.anchorForRoom(room);
 
@@ -45,7 +48,7 @@ export class AppComponent {
 
   /** Anchors that could be used when the QR sent us somewhere unknown. */
   anchors(): NodeEntry[] {
-    return this.graph.destinations();
+    return this.graph.destinations().filter(node => !this.graph.isRoomAnchor(node));
   }
 
   useAnchor(id: string): void {
@@ -66,7 +69,7 @@ export class AppComponent {
   }
 
   go(choice: { node: NodeEntry; room?: number }): void {
-    const steps = this.graph.route(this.at(), choice.node.id);
+    const steps = this.graph.directions(this.at(), choice.node.id);
     if (!steps || !steps.length) {
       this.noRouteTo.set(choice.node.label);
       this.trip.set(null);

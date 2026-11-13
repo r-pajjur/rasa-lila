@@ -25,6 +25,7 @@
           heading="Where are you starting from?"
           [askRoom]="false"
           [destinations]="anchors()"
+          [roomSummary]="roomSummary()"
           [resolveRoom]="resolveRoom"
           (picked)="useAnchor($event.node.id)"
         />
@@ -41,6 +42,7 @@
         }
         <app-destination-picker
           [destinations]="choices()"
+          [roomSummary]="roomSummary()"
           [resolveRoom]="resolveRoom"
           (picked)="go($event)"
         />
