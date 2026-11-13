@@ -546,7 +546,7 @@
       "from": "east-1",
       "to": "east-1-stairs-door",
       "photo": "meToE1/meToE11.jpg",
-      "arrow": "straight",
+      "arrow": "turn-left",
       "text": "Continue down the hall until you reach this door."
     },
     {
