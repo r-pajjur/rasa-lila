@@ -134,6 +134,9 @@
     "past-mandir": {
       "label": "Hallway past the Mandir"
     },
+    "east-1-entry": {
+      "label": "Start of the East Wing Hallway, 1st Floor"
+    },
     "library": {
       "label": "Library",
       "destination": true
@@ -314,7 +317,8 @@
       "to": "mandir",
       "photo": "dhToM/dhToM3.jpg",
       "arrow": "turn-left",
-      "text": "The mandir is through the glass doors on the left."
+      "text": "The mandir is through the glass doors on the left.",
+      "cost": 4
     },
     {
       "from": "mandir",
@@ -450,7 +454,7 @@
       "text": "Rooms 44 and 51 are along this hallway — check the numbers on the doors."
     },
     {
-      "from": "past-mandir",
+      "from": "east-1-entry",
       "to": "east-1-door",
       "photo": "mToE1/mToE11.jpg",
       "arrow": "straight",
@@ -537,10 +541,18 @@
     },
     {
       "from": "mandir",
-      "to": "past-mandir",
+      "to": "east-1-entry",
       "photo": "mToDh/mandirDoor.jpg",
       "arrow": "turn-left",
       "text": "Start at the mandir’s glass doors and turn left."
+    },
+    {
+      "from": "past-mandir",
+      "to": "east-1",
+      "photo": "meToE1/meToE11.jpg",
+      "arrow": "straight",
+      "text": "Rooms 113 to 132 are along this hallway — check the numbers on the doors.",
+      "throughText": "Continue down the hall until you reach this door."
     }
   ],
   "overrides": [
