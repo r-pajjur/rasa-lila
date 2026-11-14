@@ -140,6 +140,27 @@
     "east-1-stairs-door": {
       "label": "Door to the East Stairs, 1st Floor"
     },
+    "e2-hall-end": {
+      "label": "End of the 2nd Floor East Hallway"
+    },
+    "e2ext-out-hall": {
+      "label": "2nd Floor Extension Hallway"
+    },
+    "sunroom-from-east": {
+      "label": "Sun Room, toward the Dining Hall"
+    },
+    "e1-hall-out": {
+      "label": "1st Floor East Hallway, toward the Mandir"
+    },
+    "out-mandir-corridor": {
+      "label": "Corridor by the Mandir"
+    },
+    "out-marble-hall-end": {
+      "label": "End of the Marble Hall"
+    },
+    "out-foyer": {
+      "label": "Foyer"
+    },
     "library": {
       "label": "Library",
       "destination": true
@@ -562,6 +583,127 @@
       "photo": "dhToE2/dhToE23.jpg",
       "arrow": "straight",
       "text": "Go through the wooden door ahead, next to the whiteboard."
+    },
+    {
+      "from": "east-2",
+      "to": "e2-hall-end",
+      "photo": "e2Out/e2Out1.jpg",
+      "arrow": "straight",
+      "text": "Walk to the end of the hallway."
+    },
+    {
+      "from": "e2-hall-end",
+      "to": "landing-2",
+      "photo": "e2Out/e2Out2.jpg",
+      "arrow": "turn-left",
+      "text": "Go through the door on the left to the stairs."
+    },
+    {
+      "from": "landing-2",
+      "to": "stairwell",
+      "photo": "e2Out/e2Out3.jpg",
+      "arrow": "down",
+      "text": "Take the stairs down one floor."
+    },
+    {
+      "from": "stairwell",
+      "to": "lobby",
+      "photo": "e2Out/e2Out4.jpg",
+      "arrow": "straight",
+      "text": "Go through the door at the bottom of the stairs."
+    },
+    {
+      "from": "east-2-ext",
+      "to": "e2ext-out-hall",
+      "photo": "e2exOut/e2exOut1.jpg",
+      "arrow": "straight",
+      "text": "Walk down the hallway."
+    },
+    {
+      "from": "e2ext-out-hall",
+      "to": "landing-2",
+      "photo": "e2exOut/e2exOut2.jpg",
+      "arrow": "straight",
+      "text": "Continue toward the stairs at the end."
+    },
+    {
+      "from": "lobby",
+      "to": "east-1",
+      "photo": "e2Out/e2OutToMMe5.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway into the hallway."
+    },
+    {
+      "from": "east-1",
+      "to": "e1-hall-out",
+      "photo": "e1e2Out/e1e2OutToMMe6.jpg",
+      "arrow": "straight",
+      "text": "Walk all the way down this hallway."
+    },
+    {
+      "from": "east-1-ext",
+      "to": "east-1",
+      "photo": "e1exOut/e1exOut1.jpg",
+      "arrow": "straight",
+      "text": "Walk down the hallway back to the main hall."
+    },
+    {
+      "from": "e1-hall-out",
+      "to": "out-mandir-corridor",
+      "photo": "e1e2Out/e1e2OutToMMeHall.jpg",
+      "arrow": "straight",
+      "text": "Go through the doorway ahead."
+    },
+    {
+      "from": "out-mandir-corridor",
+      "to": "mandir",
+      "photo": "e2Out/e2OutToMFinal.jpg",
+      "arrow": "turn-right",
+      "text": "The mandir is through the glass doors on the right.",
+      "cost": 4
+    },
+    {
+      "from": "out-mandir-corridor",
+      "to": "out-marble-hall-end",
+      "photo": "e2ToMe/e2ToMe7.jpg",
+      "arrow": "straight",
+      "text": "Go up the steps and through the door."
+    },
+    {
+      "from": "out-marble-hall-end",
+      "to": "out-foyer",
+      "photo": "e2ToMe/e2ToMe8.jpg",
+      "arrow": "straight",
+      "text": "Walk through the wood-panelled hall toward the marble hall."
+    },
+    {
+      "from": "out-foyer",
+      "to": "main-entrance",
+      "photo": "e2ToMe/e2ToMe9.jpg",
+      "arrow": "straight",
+      "text": "The main entrance doors are ahead."
+    },
+    {
+      "from": "lobby",
+      "to": "sunroom-from-east",
+      "photo": "e2Out/e2OutToLDh5.jpg",
+      "arrow": "straight",
+      "text": "Walk down this hallway."
+    },
+    {
+      "from": "sunroom-from-east",
+      "to": "dining-hall",
+      "photo": "e2Out/e2OutToDh6.jpg",
+      "arrow": "straight",
+      "text": "Go through the door into the dining hall.",
+      "cost": 4
+    },
+    {
+      "from": "sunroom-from-east",
+      "to": "lower-level",
+      "photo": "e2Out/e2OutToL6.jpg",
+      "arrow": "down",
+      "text": "Take the stairs down one floor."
     }
   ],
   "overrides": [
